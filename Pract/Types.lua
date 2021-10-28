@@ -3,7 +3,7 @@
 
 
 -- Util types
-export type ChildrenArgument = {[any]: Element}
+export type ChildrenArgument = {[any]: Element | boolean | nil}
 export type PropsArgument = {[any]: any}
 export type Symbol = {}
 --export type StateUpdate<S, P> = {[any]: any} | (state: S, props: P) -> {[any]: any}

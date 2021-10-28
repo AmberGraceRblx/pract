@@ -16,7 +16,7 @@ Full guide with core concepts and usage examples coming soon.
 
 ## Getting Started
 
-You can install pract using one of the following methods:
+You can install Pract using one of the following methods:
 
 
 ### Method 1: Inserting Pract directly into your place

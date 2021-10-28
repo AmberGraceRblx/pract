@@ -38,12 +38,12 @@ local function createReconciler(): Types.Reconciler
 	
 	local reconciler: Types.Reconciler
 	local mountVirtualNode: (
-		element: Types.Element | boolean,
+		element: Types.Element | boolean | nil,
 		hostContext: Types.HostContext
 	) -> Types.VirtualNode?
 	local updateVirtualNode: (
 		virtualNode: Types.VirtualNode,
-		newElement: Types.Element?
+		newElement: Types.Element | boolean | nil
 	) -> Types.VirtualNode?
 	local unmountVirtualNode: (virtualNode: Types.VirtualNode) -> ()
 	local updateChildren: (
@@ -921,12 +921,12 @@ local function createReconciler(): Types.Reconciler
 		
 		function updateVirtualNode(
 			virtualNode: Types.VirtualNode,
-			newElement: Types.Element?
+			newElement: Types.Element | boolean | nil
 		): Types.VirtualNode?
 			local currentElement = virtualNode._currentElement
 			if currentElement == newElement then return virtualNode end
 			
-			if typeof(newElement :: any) == 'boolean' or newElement == nil then
+			if typeof(newElement) == 'boolean' or newElement == nil then
 				unmountVirtualNode(virtualNode)
 				return nil
 			end
@@ -1454,10 +1454,10 @@ local function createReconciler(): Types.Reconciler
 		end})
 		
 		function mountVirtualNode(
-			element: Types.Element | boolean,
+			element: Types.Element | boolean | nil,
 			hostContext: Types.HostContext
 		): Types.VirtualNode?
-			if typeof(element) == 'boolean' then
+			if typeof(element) == 'boolean' or element == nil then
 				return nil
 			end
 			

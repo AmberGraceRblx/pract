@@ -2,7 +2,7 @@
 -- Created by DataBrain, licensed as public domain.
 
 local Pract = {}
-Pract._VERSION = '0.9.3' -- Beta version; test coverage is still needed.
+Pract._VERSION = '0.9.4' -- Beta version; test coverage is still needed.
 
 local Types = require(script.Types)
 local PractGlobalSystems = require(script.PractGlobalSystems)
@@ -60,10 +60,5 @@ Pract.OnUpdateWithHost = Symbols.OnUpdateWithHost
 
 -- Decoration prop value symbols
 Pract.None = Symbols.None
-
--- Utility/experimental functions
-local semantic = require(script.semantic)
-Pract.semantic = semantic.untyped
-Pract.semanticTyped = semantic.typed
 
 return Pract
