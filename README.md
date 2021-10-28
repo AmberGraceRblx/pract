@@ -8,9 +8,9 @@ Pract takes inspiration from Facebook's [React](https://reactjs.org/), and LPGHa
 
 Unlike Roact, Pract provides constructs for cloning or modifying existing GuiObject templates, rather than having to generate the entire UI from scratch. This means you can design your UI in roblox's UI editor and make certain modifications without having to adjust the Pract code!
 
-# [Documentation](ambers-careware.github.io/pract)
+# [Documentation](https://ambers-careware.github.io/pract)
 
-See the [full Pract documentation](ambers-careware.github.io/pract) for a detailed guide on how to use Pract, with examples.
+See the [full Pract documentation](https://ambers-careware.github.io/pract) for a detailed guide on how to use Pract, with examples.
 
 ```lua
 --!strict
