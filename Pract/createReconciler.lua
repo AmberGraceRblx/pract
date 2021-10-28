@@ -894,9 +894,9 @@ local function createReconciler(): Types.Reconciler
 				end
 				return nextNode
 			else
-				-- Place in child node if it was latently mounted
 				if currentElement[Symbol_ElementKind] == ElementKinds.OnChild then
 					if virtualNode._resolved then
+						-- Place in child node if it was latently resolved and mounted
 						local resolvedNode = virtualNode._resolvedNode :: Types.VirtualNode
 						if resolvedNode then
 							return updateVirtualNode(resolvedNode, newElement)
