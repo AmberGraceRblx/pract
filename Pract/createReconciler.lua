@@ -618,7 +618,7 @@ local function createReconciler(): Types.Reconciler
 			
 			local onChildElement = {
 				[Symbol_ElementKind] = ElementKinds.OnChild,
-				wrappedElement = virtualNode._currentElement
+				wrappedElement = virtualNode._currentElement,
 			}
 			virtualNode._currentElement = onChildElement
 			virtualNode._resolved = false
@@ -648,7 +648,7 @@ local function createReconciler(): Types.Reconciler
 							.. " timed out. Perhaps the child key was named incorrectly?"
 						)
 					end
-				until triesAttempted > PractGlobalSystems.ON_CHILD_TIMEOUT_RETRIES
+				until false
 			end)
 		end
 	end
@@ -661,9 +661,11 @@ local function createReconciler(): Types.Reconciler
 			) -> Types.VirtualNode?
 		}
 		
-		-- Always replace onChild updates
-		updateByElementKind[ElementKinds.OnChild] = function(virtualNode, newElement)
-			return replaceVirtualNode(virtualNode, newElement)
+		-- Replace the wrapped element; the WaitForChild thread should automatically handle
+		-- added children.
+		updateByElementKind[ElementKinds.OnChild] = function(virtualNode)
+			virtualNode._currentElement.wrappedElement = virtualNode
+			return virtualNode
 		end
 		
 		updateByElementKind[ElementKinds.Decorate] = function(virtualNode, newElement)
