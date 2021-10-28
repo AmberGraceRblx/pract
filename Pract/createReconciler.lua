@@ -661,12 +661,12 @@ local function createReconciler(): Types.Reconciler
 			) -> Types.VirtualNode?
 		}
 		
-		-- Replace the wrapped element; the WaitForChild thread should automatically handle
-		-- added children.
-		updateByElementKind[ElementKinds.OnChild] = function(virtualNode)
-			virtualNode._currentElement.wrappedElement = virtualNode
-			return virtualNode
-		end
+		-- OnChild elements should never be created by the user; new node replacements for
+		-- unresolved onChild nodes are handled elsewhere as an exceptional case instead.
+		-- updateByElementKind[ElementKinds.OnChild] = function(virtualNode)
+		-- 	virtualNode._currentElement.wrappedElement = virtualNode
+		-- 	return virtualNode
+		-- end
 		
 		updateByElementKind[ElementKinds.Decorate] = function(virtualNode, newElement)
 			local instance = virtualNode._instance
@@ -902,6 +902,14 @@ local function createReconciler(): Types.Reconciler
 							return updateVirtualNode(resolvedNode, newElement)
 						end
 						return resolvedNode
+					else
+						-- Compare the elementkind of our wrapped element, and simply swap it out
+						-- if it has not changed.
+						if virtualNode._currentElement.wrappedElement[Symbol_ElementKind]
+						== kind then
+							virtualNode._currentElement.wrappedElement = newElement
+							return virtualNode
+						end
 					end
 				end
 				
