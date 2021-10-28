@@ -21,10 +21,10 @@ local PlayerGui = game.Players.LocalPlayer:WaitForChild('PlayerGui')
 
 -- Create our virtual GUI elements
 local element = Pract.create('ScreenGui', {ResetOnSpawn = false}, {
-	HelloLabel = Pract.create('TextLabel', {
-		BackgroundTransparency = 1, Text='Hello, Pract!', TextSize=24,
-		Position = UDim2.fromScale(0.5,0.35), AnchorPoint = Vector2.new(0.5,0.5)
-	})
+    HelloLabel = Pract.create('TextLabel', {
+        BackgroundTransparency = 1, Text='Hello, Pract!', TextSize=24,
+        Position = UDim2.fromScale(0.5,0.35), AnchorPoint = Vector2.new(0.5,0.5)
+    })
 })
 
 -- Mount our virtual GUI elements into real instances, parented to PlayerGui
