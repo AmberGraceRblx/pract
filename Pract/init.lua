@@ -26,6 +26,7 @@ Pract.index = require(script.index)
 Pract.stamp = require(script.stamp)
 Pract.decorate = require(script.decorate)
 Pract.portal = require(script.portal)
+Pract.combine = require(script.combine)
 
 -- Virtual tree functions
 local createReconciler = require(script.createReconciler)
