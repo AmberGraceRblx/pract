@@ -13,25 +13,22 @@ A virtual tree is at the core of Pract, and mirrors the structure of an instance
 
 Example, from a LocalScript:
 ```lua
---!strict
-local Pract = require(game.ReplicatedStorage.Pract)
-
 local helloPract = Pract.mount(
-	Pract.create(
-		'ScreenGui',
-		{ResetOnSpawn = false},
-		{
-			HelloLabel = Pract.create(
-				'TextLabel',
- 				{
-					BackgroundTransparency = 1, Text='Hello, Pract!', TextSize=24,
-					Position = UDim2.fromScale(0.5,0.35), AnchorPoint = Vector2.new(0.5,0.5)
-				},
-        		{}
-			)
-		}
-	),
-	game.Players.LocalPlayer:WaitForChild('PlayerGui')
+    Pract.create(
+        'ScreenGui',
+        {ResetOnSpawn = false},
+        {
+            HelloLabel = Pract.create(
+                'TextLabel',
+                 {
+                    BackgroundTransparency = 1, Text='Hello, Pract!', TextSize=24,
+                    Position = UDim2.fromScale(0.5,0.35), AnchorPoint = Vector2.new(0.5,0.5)
+                },
+                {}
+            )
+        }
+    ),
+    game.Players.LocalPlayer:WaitForChild('PlayerGui')
 )
 ```
 Instance created by Pract:
