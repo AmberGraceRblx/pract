@@ -950,20 +950,6 @@ local function createReconciler(): Types.Reconciler
 					end
 				end
 				
-				-- Finish incomplete semantic fragments
-				if kind == ElementKinds.IncompleteSemanticElement then
-					local element = newElement :: any
-					while element._argsGiven < #element._defaultArgs do
-						element = element(element._defaultArgs[element._argsGiven + 1])
-						
-						if element[Symbol_ElementKind] ~= ElementKinds.IncompleteSemanticElement then
-							break
-						end
-					end
-					
-					return updateVirtualNode(virtualNode, element)
-				end
-				
 				-- Else, unmount this node and replace it with a new node.
 				return replaceVirtualNode(virtualNode, newElement :: any)
 			end
@@ -1153,24 +1139,7 @@ local function createReconciler(): Types.Reconciler
 												-- must exist in this case!
 			end
 		end
-			-- Complete semantic factories
-		mountByElementKind[ElementKinds.IncompleteSemanticElement] = function(virtualNode)
-			local element = virtualNode._currentElement :: any
-			while element._argsGiven < #element._defaultArgs do
-				element = element(element._defaultArgs[element._argsGiven + 1])
-				virtualNode._currentElement = element
-				
-				if element[Symbol_ElementKind] ~= ElementKinds.IncompleteSemanticElement then
-					break
-				end
-			end
-			
-			-- Process wrapped element
-			mountByElementKind[
-				(element)[Symbol_ElementKind]
-			](virtualNode)
-		end
-		
+
 		mountByElementKind[ElementKinds.Portal] = function(virtualNode)
 			local element = virtualNode._currentElement
 			mountChildren(virtualNode)
@@ -1494,7 +1463,6 @@ local function createReconciler(): Types.Reconciler
 			unmountChildren(virtualNode)
 			virtualNode._instance:Destroy()
 		end
-		unmountByElementKind[ElementKinds.IncompleteSemanticElement] = NOOP
 		unmountByElementKind[ElementKinds.Portal] = function(virtualNode)
 			unmountChildren(virtualNode)
 		end

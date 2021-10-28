@@ -19,7 +19,6 @@ ElementKinds.StateComponent = createSymbol('StateComponent')
 ElementKinds.SignalComponent = createSymbol('SignalComponent')
 ElementKinds.ContextProvider = createSymbol('ContextProvider')
 ElementKinds.ContextConsumer = createSymbol('ContextConsumer')
-ElementKinds.IncompleteSemanticElement = createSymbol('IncompleteSemanticElement')
 ElementKinds.SiblingCluster = createSymbol('SiblingCluster')
 Symbols.ElementKinds = ElementKinds
 
