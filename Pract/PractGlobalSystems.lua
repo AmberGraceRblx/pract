@@ -7,7 +7,7 @@ local RunService = game:GetService('RunService')
 local PractGlobalSystems = {}
 
 PractGlobalSystems.HeartbeatFrameCount = 0
-PractGlobalSystems.ON_CHILD_TIMEOUT_INTERVAL = 30
+PractGlobalSystems.ON_CHILD_TIMEOUT_INTERVAL = 10
 
 local whileRunningConns = {} :: {RBXScriptConnection}
 local running = false
