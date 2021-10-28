@@ -602,48 +602,11 @@ local function createReconciler(): Types.Reconciler
 	end
 	
 	local mountNodeOnChild, unmountOnChildNode; do
-		local INST_TO_CHILD_FINDER_NODE_MAP = {} :: {[Instance]: {[string]: {Types.VirtualNode}}}
-		local INST_TO_CHILD_FINDER_EVENT = {}
-		
-		local function destroyChildFinder(parent: Instance)
-			local event = INST_TO_CHILD_FINDER_EVENT[parent]
-			if event then
-				INST_TO_CHILD_FINDER_NODE_MAP[parent] = nil
-				INST_TO_CHILD_FINDER_EVENT[parent] = nil
-			end
-		end
-		
 		function unmountOnChildNode(node: Types.VirtualNode)
 			if node._resolved then
 				local resolvedNode = node._resolvedNode
 				if resolvedNode then
 					unmountVirtualNode(resolvedNode)
-				end
-			else
-				local hostContext = node._hostContext
-				local parent = hostContext.instance
-				local childKey = hostContext.childKey
-				if parent and childKey then
-					local nodeMap = INST_TO_CHILD_FINDER_NODE_MAP[parent]
-					if nodeMap then
-						local nodesOnChild = nodeMap[childKey]
-						if nodesOnChild then
-							for i = 1, #nodesOnChild do
-								if nodesOnChild[i] == node then
-									table.remove(nodesOnChild, i)
-									
-									if #nodesOnChild == 0 then
-										nodeMap[childKey] = nil
-										if not next(nodeMap) then
-											destroyChildFinder(parent)
-										end
-									end
-									
-									break
-								end
-							end
-						end
-					end
 				end
 			end
 		end
@@ -660,43 +623,33 @@ local function createReconciler(): Types.Reconciler
 			virtualNode._currentElement = onChildElement
 			virtualNode._resolved = false
 			
-			local nodeMap = INST_TO_CHILD_FINDER_NODE_MAP[hostInstance]
-			if not nodeMap then
-				nodeMap = {}
-				INST_TO_CHILD_FINDER_NODE_MAP[hostInstance] = nodeMap
-				
-				local event = hostInstance.ChildAdded:Connect(function(child: Instance)
-					local nodesOnChild = nodeMap[child.Name]
-					if nodesOnChild then
-						nodeMap[child.Name] = nil
-						
-						if not next(nodeMap) then
-							destroyChildFinder(hostInstance)
-						end
-						
-						for i = 1, #nodesOnChild do
-							local node = nodesOnChild[i]
-							task.defer(function()
-								if node._wasUnmounted then return end
-								
-								node._resolved = true
-								node._resolvedNode = mountVirtualNode(
-									node._currentElement.wrappedElement,
-									hostContext
-								)
-							end)
-						end
+			task.defer(function()
+				local triesAttempted = 0
+				repeat
+					triesAttempted = triesAttempted + 1
+					local child = hostInstance:WaitForChild(
+						hostKey,
+						PractGlobalSystems.ON_CHILD_TIMEOUT_INTERVAL
+					)
+					if virtualNode._wasUnmounted then return end
+					if child then
+						virtualNode._resolved = true
+						virtualNode._resolvedNode = mountVirtualNode(
+							virtualNode._currentElement.wrappedElement,
+							hostContext
+						)
+						return
+					elseif triesAttempted == 1 then
+						warn(
+							'Attempt to mount decorate/index element on child "'
+							.. hostKey
+							.. '" of '
+							.. hostInstance:GetFullName()
+							.. " timed out. Perhaps the child key was named incorrectly?"
+						)
 					end
-				end)
-				INST_TO_CHILD_FINDER_EVENT[hostInstance] = event
-			end
-			local nodesOnChild = nodeMap[hostKey]
-			if not nodesOnChild then
-				nodesOnChild = {}
-				nodeMap[hostKey] = nodesOnChild
-			end
-			
-			table.insert(nodesOnChild, virtualNode)
+				until triesAttempted > PractGlobalSystems.ON_CHILD_TIMEOUT_RETRIES
+			end)
 		end
 	end
 	
