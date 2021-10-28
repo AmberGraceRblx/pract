@@ -7,11 +7,12 @@ permalink: /
 
 # Introduction to Pract
 
-Pract is a **declarative** UI engine for Roblox.
+
+Pract is a _declarative_ UI engine for Roblox.
 
 Pract takes inspiration from Facebook's [React](https://reactjs.org/), and LPGHatGuy's [Roact](https://github.com/Roblox/roact), with an emphasis on providing **practical** features for bringing Roblox UI projects to life while still maintaining Roact's declarative code style.
 
-
+Full guide with core concepts and usage examples coming soon.
 
 ## Getting Started
 
