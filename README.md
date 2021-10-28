@@ -29,5 +29,26 @@ local element = Pract.create('ScreenGui', {ResetOnSpawn = false}, {
 -- Mount our virtual GUI elements into real instances, parented to PlayerGui
 local virtualTree = Pract.mount(element, PlayerGui)
 ```
+Alternative semantic form:
+
+
+```lua
+--!strict
+local Pract = require(game.ReplicatedStorage.Pract)
+local create, stamp, decorate, index, portal, combine = Pract.semantic()
+
+local PlayerGui = game.Players.LocalPlayer:WaitForChild('PlayerGui')
+
+-- Create our virtual GUI elements
+local element = create 'ScreenGui' {ResetOnSpawn = false} {
+    HelloLabel = create 'TextLabel' {
+        Text = 'Hello, Pract!', TextSize = 24, BackgroundTransparency = 1,
+        Position = UDim2.fromScale(0.5, 0.35), AnchorPoint = Vector2.new(0.5, 0.5)
+    }
+}
+
+-- Mount our virtual GUI elements into real instances, parented to PlayerGui
+local virtualTree = Pract.mount(element, PlayerGui)
+```
 
 ![image](https://user-images.githubusercontent.com/93293456/139168972-49572640-604f-4781-a6f8-ba8ef98509ac.png)
