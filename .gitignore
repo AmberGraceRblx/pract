@@ -1,0 +1,13 @@
+# Project place file
+/pract.rbxlx
+
+# OS-created files
+.DS_Store
+
+# External Utilities
+/rbxlx-to-rojo-macos
+/rbxlx-to-rojo.exe
+
+# Roblox Studio lock files
+/*.rbxlx.lock
+/*.rbxl.lock
