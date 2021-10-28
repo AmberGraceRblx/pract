@@ -29,3 +29,5 @@ local element = Pract.create('ScreenGui', {ResetOnSpawn = false}, {
 -- Mount our virtual GUI elements into real instances, parented to PlayerGui
 local virtualTree = Pract.mount(element, PlayerGui)
 ```
+
+![image](https://user-images.githubusercontent.com/93293456/139168972-49572640-604f-4781-a6f8-ba8ef98509ac.png)
