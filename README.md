@@ -14,7 +14,6 @@ See the [full Pract documentation](ambers-careware.github.io/pract) for a detail
 
 ```lua
 --!strict
-
 local Pract = require(game.ReplicatedStorage.Pract)
 
 local PlayerGui = game.Players.LocalPlayer:WaitForChild('PlayerGui')
