@@ -116,7 +116,7 @@ export type PractTree = {
 export type Reconciler = {
 	mountVirtualTree: (
 		element: Element,
-		hostInstance: Instance,
+		hostInstance: Instance?,
 		hostKey: string?
 	) -> PractTree,
 	updateVirtualTree: (tree: PractTree, newElement: Element) -> (),
