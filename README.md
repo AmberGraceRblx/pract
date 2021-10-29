@@ -12,6 +12,7 @@ Unlike Roact, Pract provides constructs for cloning or modifying existing GuiObj
 
 See the [full Pract documentation](https://ambers-careware.github.io/pract) for a detailed guide on how to use Pract, with examples.
 
+Basic usage example (Roact-like form):
 ```lua
 --!strict
 local Pract = require(game.ReplicatedStorage.Pract)
@@ -29,7 +30,22 @@ local element = Pract.create('ScreenGui', {ResetOnSpawn = false}, {
 -- Mount our virtual GUI elements into real instances, parented to PlayerGui
 local virtualTree = Pract.mount(element, PlayerGui)
 ```
+Alternative form (using a template):
+```lua
+--!strict
+local Pract = require(game.ReplicatedStorage.Pract)
 
+local PlayerGui = game.Players.LocalPlayer:WaitForChild('PlayerGui')
+
+-- Create our virtual GUI elements from a cloned template under this script
+local element = Pract.stamp(script.MyGuiTemplate, {}, {
+    HelloLabel = Pract.decorate({Text = 'Hello, Pract!'})
+})
+
+-- Mount our virtual GUI elements into real instances, parented to PlayerGui
+local virtualTree = Pract.mount(element, PlayerGui)
+```
+Generated GUI instances:
 ![image](https://user-images.githubusercontent.com/93293456/139168972-49572640-604f-4781-a6f8-ba8ef98509ac.png)
 
 # Installation
