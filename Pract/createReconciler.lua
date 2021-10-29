@@ -641,7 +641,7 @@ local function createReconciler(): Types.Reconciler
 						return
 					elseif triesAttempted == 1 then
 						warn(
-							'Attempt to mount decorate/index element on child "'
+							'Attempt to mount decorate or index element on child "'
 							.. hostKey
 							.. '" of '
 							.. hostInstance:GetFullName()
