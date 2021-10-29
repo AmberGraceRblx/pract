@@ -1,5 +1,2 @@
-remote_theme: fernandopasik/jekyll-theme-material-docs
-
-plugins:
-  - jekyll-remote-theme
+remote_theme: pmarsceill/just-the-docs
 title: Pract
