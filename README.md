@@ -4,15 +4,15 @@
 > 
 Pract is a **declarative** UI engine for Roblox.
 
-Pract takes inspiration from Facebook's [React](https://reactjs.org/), and LPGHatGuy's [Roact](https://github.com/Roblox/roact), with an emphasis on providing **practical** features for bringing Roblox UI projects to life while still maintaining Roact's declarative code style.
+Pract takes inspiration from Facebook's [React](https://reactjs.org/) and LPGHatGuy's [Roact](https://github.com/Roblox/roact), with an emphasis on providing **practical** features for bringing Roblox UI projects to life while still maintaining Roact's declarative code style.
 
-Unlike Roact, Pract provides constructs for cloning or modifying existing GuiObject templates, rather than having to generate the entire UI from scratch. This means you can design your UI in roblox's UI editor and make certain modifications without having to adjust the Pract code!
+On top of having the same basic features as Roact, Pract provides constructs for cloning or modifying existing GuiObject templates, rather than having to write code to design the entire GUI tree from scratch. This means you can design your UI in roblox's UI editor and make certain modifications there without having to change any of your code!
 
 # [Documentation](https://ambers-careware.github.io/pract)
 
 See the [full Pract documentation](https://ambers-careware.github.io/pract) for a detailed guide on how to use Pract, with examples.
 
-Basic usage example (Roact-like form):
+Basic usage example:
 ```lua
 --!strict
 local Pract = require(game.ReplicatedStorage.Pract)
@@ -30,7 +30,7 @@ local element = Pract.create('ScreenGui', {ResetOnSpawn = false}, {
 -- Mount our virtual GUI elements into real instances, parented to PlayerGui
 local virtualTree = Pract.mount(element, PlayerGui)
 ```
-Alternative form (using a template):
+Alternative form (using a cloned template):
 ```lua
 --!strict
 local Pract = require(game.ReplicatedStorage.Pract)
@@ -45,7 +45,7 @@ local element = Pract.stamp(script.MyGuiTemplate, {}, {
 -- Mount our virtual GUI elements into real instances, parented to PlayerGui
 local virtualTree = Pract.mount(element, PlayerGui)
 ```
-Generated GUI instances:
+Both examples can generate the same instances:
 ![image](https://user-images.githubusercontent.com/93293456/139168972-49572640-604f-4781-a6f8-ba8ef98509ac.png)
 
 # Installation
