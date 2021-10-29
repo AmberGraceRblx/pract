@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Introduction
+title: Getting Started
 nav_order: 1
 permalink: /
 ---
@@ -8,11 +8,11 @@ permalink: /
 # Introduction to Pract
 
 
-Pract is a _declarative_ UI engine for Roblox.
+Pract is a **declarative** UI engine for Roblox, written in Roblox's [Luau](https://luau-lang.org/)
 
-Pract takes inspiration from Facebook's [React](https://reactjs.org/), and LPGHatGuy's [Roact](https://github.com/Roblox/roact), with an emphasis on providing **practical** features for bringing Roblox UI projects to life while still maintaining Roact's declarative code style.
+Pract takes inspiration from Facebook's [React](https://reactjs.org/) and LPGHatGuy's [Roact](https://github.com/Roblox/roact), with an emphasis on providing **practical** features for bringing Roblox UI projects to life while still maintaining Roact's declarative code style.
 
-Full guide with core concepts and usage examples coming soon.
+Pract allows you to design your UI entirely in code, use a template designed in roblox's UI editor, or a mix of both. This documentation will show usage examples and detail how to effectively design your own UI code with the library's features.
 
 ## Getting Started
 
@@ -30,3 +30,6 @@ You can install Pract using one of the following methods:
 2. [Download the Pract repository](https://github.com/ambers-careware/pract/archive/refs/heads/main.zip)
 3. Extract the `Pract` folder from the repository into a location of your choosing within your Rojo project's source folder (e.g. `src/shared`)
 4. Sync your project using Rojo
+
+
+#### Up Next: [Hello, Pract!](hellopract.md)
