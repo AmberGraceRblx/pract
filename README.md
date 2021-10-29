@@ -6,7 +6,9 @@ Pract is a **declarative** UI engine for Roblox.
 
 Pract takes inspiration from Facebook's [React](https://reactjs.org/) and LPGHatGuy's [Roact](https://github.com/Roblox/roact), with an emphasis on providing **practical** features for bringing Roblox UI projects to life while still maintaining Roact's declarative code style.
 
-On top of having the same basic features as Roact, Pract provides constructs for cloning or modifying existing GuiObject templates, rather than having to write code to design the entire GUI tree from scratch. This means you can design your UI in roblox's UI editor and make certain modifications there without having to change any of your code!
+Pract allows you to either design your UI entirely in code, or to use a template designed in roblox's UI editor, or a mix of both!
+
+Pract is written in Roblox's [Luau](https://luau-lang.org/), and is compatible with Luau's `--!strict` mode. It is recommended that you write Pract code in strict mode to improve the debugging experience.
 
 # [Documentation](https://ambers-careware.github.io/pract)
 
