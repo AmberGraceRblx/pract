@@ -15,3 +15,5 @@
 
 # Jekyll docs
 /docs/.jekyll-cache
+/docs/_site
+/docs/Gemfile.lock
