@@ -1,0 +1,26 @@
+{"0": {
+    "doc": "Hello, Pract!",
+    "title": "Hello, Pract!",
+    "content": "Note: These examples will assume you have installed Pract into game.ReplicatedStorage. If you have installed Pract elsewhere, please adjust any require statements in these examples to match where you have installed Pract! . Add a LocalScript in game.StarterPlayer.StarterPlayerScripts, in Roblox Studio or through Rojo, and paste the following code: . --!strict local Pract = require(game.ReplicatedStorage.Pract) local PlayerGui = game.Players.LocalPlayer:WaitForChild('PlayerGui') local element = Pract.create('ScreenGui', {ResetOnSpawn = false}, { HelloLabel = Pract.create('TextLabel', { Text = 'Hello, Pract!', TextSize = 24, BackgroundTransparency = 1, Position = UDim2.fromScale(0.5, 0.35), AnchorPoint = Vector2.new(0.5, 0.5) }) }) Pract.mount(element, PlayerGui) . When you run a Roblox Studio playtest, you should see a text label on your screen with the text “Hello, Pract!” . Congratulations, you have mounted your first Pract element! . ",
+    "url": "http://localhost:4000/hellopract",
+    "relUrl": "/hellopract"
+  },"1": {
+    "doc": "Hello, Pract!",
+    "title": "Hello, Templates!",
+    "content": "While the example above specifies how our UI is designed in the code itself, this can be re-written using templates, a feature of Pract which should make our code look even simpler, as well as giving you more flexibility to design how you want your UI to look! . Open up the LocalScript that you created, and replace the code from the above example with the following new code: . --!strict local Pract = require(game.ReplicatedStorage.Pract) local PlayerGui = game.Players.LocalPlayer:WaitForChild('PlayerGui') local myLuckyNumber = math.random(1, 99) local element = Pract.stamp(script.HelloPractTemplate, {}, { HelloLabel = Pract.decorate({Text = string.format('Your lucky number is %d', myLuckyNumber)}) }) Pract.mount(element, PlayerGui) . NOTE: Before you can run this code, you will need to have a correctly-formatted template named HelloPractTemplate parented to your LocalScript . Let’s design our template: . | Right click game.StarterGui and insert a ScreenGui. Name it HelloPractTemplate and set ResetOnSpawn to false | Right click HelloPractTemplate and insert a TextLabel. Make sure it’s named HelloLabel (with the correct spelling/capitalization). Edit properties like BackgroundTransparency, Font, FontSize, and TextColor3 in order to achieve the desired visual design. | Once we have finished designing our template, drag it into our LocalScript so that it is parented to our LocalScript | . When you run a playtest, your template will be copied into your PlayerGui, with a slight modification to the HelloLabel showing a random number between 1 and 99. You can modify properties of your template to change the look of the UI without having to edit any of the Pract code! Using templates allows your code to focus more on the functional parts of the UI, and less on the aesthetic parts, which can be separately from code. In this section, we created three different types of “Elements,” which are returned when calling the Pract.create, Pract.stamp, and Pract.decorate functions. The next section discusses what Elements really are, the difference between the basic types of Elements, and how they are used by the Pract engine to build our UI from code and templates. Next Up: Elements . ",
+    "url": "http://localhost:4000/hellopract#hello-templates",
+    "relUrl": "/hellopract#hello-templates"
+  },"2": {
+    "doc": "Getting Started",
+    "title": "Introduction to Pract",
+    "content": "Pract is a declarative UI engine for Roblox, written in Roblox’s Luau . Pract takes inspiration from Facebook’s React and LPGHatGuy’s Roact, with an emphasis on providing practical features for bringing Roblox UI projects to life while still maintaining Roact’s declarative code style. Pract allows you to design your UI entirely in code, use a template designed in roblox’s UI editor, or a mix of both. This documentation will show usage examples and detail how to effectively design your own UI code with the library’s features. ",
+    "url": "http://localhost:4000/#introduction-to-pract",
+    "relUrl": "/#introduction-to-pract"
+  },"3": {
+    "doc": "Getting Started",
+    "title": "Getting Started",
+    "content": "You can install Pract using one of the following methods: . Method 1: Inserting Pract directly into your place . | Download the latest rbxm release on Github | Right click the object in the Roblox Studio Explorer that you want to insert Pract into (such as ReplicatedStorage) and select Insert from File... | Locate the rbxm file that you downloaded and click Open | . Method 2: Syncing via Rojo . | Install Rojo and initialize your game as a Rojo project if you have not already done so | Download the Pract repository | Extract the Pract folder from the repository into a location of your choosing within your Rojo project’s source folder (e.g. src/shared) | Sync your project using Rojo | . Up Next: Hello, Pract! . ",
+    "url": "http://localhost:4000/",
+    "relUrl": "/"
+  }
+}
