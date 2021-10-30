@@ -1,4 +1,4 @@
 theme: "just-the-docs"
 title: Pract
 color_scheme: custom
-base: "/docs"
+baseurl: "/pract"
