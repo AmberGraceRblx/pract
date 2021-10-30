@@ -12,3 +12,7 @@
 # Roblox Studio lock files
 /*.rbxlx.lock
 /*.rbxl.lock
+
+# Jekyll docs
+/docs/_site
+/docs/.jekyll-cache

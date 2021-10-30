@@ -32,4 +32,4 @@ You can install Pract using one of the following methods:
 4. Sync your project using Rojo
 
 
-#### Up Next: [Hello, Pract!](hellopract.md)
+#### Up Next: [Hello, Pract!](hellopract)
