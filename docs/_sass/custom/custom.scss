@@ -13,233 +13,218 @@ $code-operator-color: #b3a1b2;
 $code-literal-color: #f87eda;
 $code-string-color:#5eca5a;
 $code-keyword-color: #ad5fc0;
-  
-  .highlight .c {
-    color: $code-comment-color;
-  } // comment //
-  .highlight .err {
-    color: #93a1a1;
-  } // error //
-  .highlight .g {
-    color: #93a1a1;
-  } // generic //
-  .highlight .k {
-    color: $code-keyword-color;
-  } // keyword //
-  .highlight .l {
-    color: $code-literal-color;
-  } // literal //
-  .highlight .n {
-    color:  $code-ident-color;
-  } // name //
-  .highlight .o {
-    color:  $code-operator-color;
-  } // operator //
-  .highlight .x {
-    color: #cb4b16;
-  } // other //
-  .highlight .p {
-    color: $code-operator-color;
-  } // punctuation //
-  .highlight .cm {
-    color: $code-comment-color;
-  } // comment.multiline //
-  .highlight .cp {
-    color: $code-comment-color;
-  } // comment.preproc //
-  .highlight .c1 {
-    color: $code-comment-color;
-  } // comment.single //
-  .highlight .cs {
-    color: $code-comment-color;
-  } // comment.special //
-  .highlight .gd {
-    color: #2aa198;
-  } // generic.deleted //
-  .highlight .ge {
-    font-style: italic;
-    color: #93a1a1;
-  } // generic.emph //
-  .highlight .gr {
-    color: #dc322f;
-  } // generic.error //
-  .highlight .gh {
-    color: #cb4b16;
-  } // generic.heading //
-  .highlight .gi {
-    color: #859900;
-  } // generic.inserted //
-  .highlight .go {
-    color: #93a1a1;
-  } // generic.output //
-  .highlight .gp {
-    color: #93a1a1;
-  } // generic.prompt //
-  .highlight .gs {
-    font-weight: bold;
-    color: #93a1a1;
-  } // generic.strong //
-  .highlight .gu {
-    color: #cb4b16;
-  } // generic.subheading //
-  .highlight .gt {
-    color: #93a1a1;
-  } // generic.traceback //
-  .highlight .kc {
-    color: $code-literal-color;
-  } // keyword.constant //
-  .highlight .kd {
-    color: $code-keyword-color;
-  } // keyword.declaration //
-  .highlight .kn {
-    color: $code-keyword-color;
-  } // keyword.namespace //
-  .highlight .kp {
-    color: $code-keyword-color;
-  } // keyword.pseudo //
-  .highlight .kr {
-    color: $code-keyword-color;
-  } // keyword.reserved //
-  .highlight .kt {
-    color: $code-keyword-color;
-  } // keyword.type //
-  .highlight .ld {
-    color: $code-literal-color;
-  } // literal.date //
-  .highlight .m {
-    color: $code-literal-color;
-  } // literal.number //
-  .highlight .s {
-    color: $code-string-color;
-  } // literal.string //
-  .highlight .na {
-    color: #555;
-  } // name.attribute //
-  .highlight .nb {
-    color: $code-special-ident-color;
-  } // name.builtin //
-  .highlight .nc {
-    color: #268bd2;
-  } // name.class //
-  .highlight .no {
-    color: #cb4b16;
-  } // name.constant //
-  .highlight .nd {
-    color: #268bd2;
-  } // name.decorator //
-  .highlight .ni {
-    color: #cb4b16;
-  } // name.entity //
-  .highlight .ne {
-    color: #cb4b16;
-  } // name.exception //
-  .highlight .nf {
-    color: #268bd2;
-  } // name.function //
-  .highlight .nl {
-    color: #555;
-  } // name.label //
-  .highlight .nn {
-    color: #93a1a1;
-  } // name.namespace //
-  .highlight .nx {
-    color: #555;
-  } // name.other //
-  .highlight .py {
-    color: #93a1a1;
-  } // name.property //
-  .highlight .nt {
-    color: #268bd2;
-  } // name.tag //
-  .highlight .nv {
-    color: #268bd2;
-  } // name.variable //
-  .highlight .ow {
-    color: #859900;
-  } // operator.word //
-  .highlight .w {
-    color: #93a1a1;
-  } // text.whitespace //
-  .highlight .mf {
-    color: $code-literal-color;
-  } // literal.number.float //
-  .highlight .mh {
-    color: $code-literal-color;
-  } // literal.number.hex //
-  .highlight .mi {
-    color: $code-literal-color;
-  } // literal.number.integer //
-  .highlight .mo {
-    color: $code-literal-color;
-  } // literal.number.oct //
-  .highlight .sb {
-    color: $code-string-color;
-  } // literal.string.backtick //
-  .highlight .sc {
-    color: $code-string-color;
-  } // literal.string.char //
-  .highlight .sd {
-    color: $code-string-color;
-  } // literal.string.doc //
-  .highlight .s2 {
-    color: $code-string-color;
-  } // literal.string.double //
-  .highlight .se {
-    color: $code-string-color;
-  } // literal.string.escape //
-  .highlight .sh {
-    color: $code-string-color;
-  } // literal.string.heredoc //
-  .highlight .si {
-    color: $code-string-color;
-  } // literal.string.interpol //
-  .highlight .sx {
-    color: $code-string-color;
-  } // literal.string.other //
-  .highlight .sr {
-    color: $code-string-color;
-  } // literal.string.regex //
-  .highlight .s1 {
-    color: $code-string-color;
-  } // literal.string.single //
-  .highlight .ss {
-    color: $code-string-color;
-  } // literal.string.symbol //
-  .highlight .bp {
-    color: #268bd2;
-  } // name.builtin.pseudo //
-  .highlight .vc {
-    color: #268bd2;
-  } // name.variable.class //
-  .highlight .vg {
-    color: #268bd2;
-  } // name.variable.global //
-  .highlight .vi {
-    color: #268bd2;
-  } // name.variable.instance //
-  .highlight .il {
-    color: $code-literal-color;
-  } // literal.number.integer.long //
-  
-  //
-  // Code examples (rendered)
-  //
-  
-  .code-example {
-    padding: $sp-3;
-    margin-bottom: $sp-3;
-    overflow: auto;
-    border: 1px solid $border-color;
-    border-radius: $border-radius;
-  
-    + .highlighter-rouge,
-    + figure.highlight {
-      position: relative;
-      margin-top: -$sp-4;
-      border-right: 1px solid $border-color;
-      border-bottom: 1px solid $border-color;
-      border-left: 1px solid $border-color;
-      border-top-left-radius: 0;
-      border-top-right-radius: 0;
-    }
-  }
+
+.highlight .c {
+  color: $code-comment-color;
+} // comment //
+.highlight .err {
+  color: #93a1a1;
+} // error //
+.highlight .g {
+  color: #93a1a1;
+} // generic //
+.highlight .k {
+  color: $code-keyword-color;
+} // keyword //
+.highlight .l {
+  color: $code-literal-color;
+} // literal //
+.highlight .n {
+  color:  $code-ident-color;
+} // name //
+.highlight .o {
+  color:  $code-operator-color;
+} // operator //
+.highlight .x {
+  color: #cb4b16;
+} // other //
+.highlight .p {
+  color: $code-operator-color;
+} // punctuation //
+.highlight .cm {
+  color: $code-comment-color;
+} // comment.multiline //
+.highlight .cp {
+  color: $code-comment-color;
+} // comment.preproc //
+.highlight .c1 {
+  color: $code-comment-color;
+} // comment.single //
+.highlight .cs {
+  color: $code-comment-color;
+} // comment.special //
+.highlight .gd {
+  color: #2aa198;
+} // generic.deleted //
+.highlight .ge {
+  font-style: italic;
+  color: #93a1a1;
+} // generic.emph //
+.highlight .gr {
+  color: #dc322f;
+} // generic.error //
+.highlight .gh {
+  color: #cb4b16;
+} // generic.heading //
+.highlight .gi {
+  color: #859900;
+} // generic.inserted //
+.highlight .go {
+  color: #93a1a1;
+} // generic.output //
+.highlight .gp {
+  color: #93a1a1;
+} // generic.prompt //
+.highlight .gs {
+  font-weight: bold;
+  color: #93a1a1;
+} // generic.strong //
+.highlight .gu {
+  color: #cb4b16;
+} // generic.subheading //
+.highlight .gt {
+  color: #93a1a1;
+} // generic.traceback //
+.highlight .kc {
+  color: $code-literal-color;
+} // keyword.constant //
+.highlight .kd {
+  color: $code-keyword-color;
+} // keyword.declaration //
+.highlight .kn {
+  color: $code-keyword-color;
+} // keyword.namespace //
+.highlight .kp {
+  color: $code-keyword-color;
+} // keyword.pseudo //
+.highlight .kr {
+  color: $code-keyword-color;
+} // keyword.reserved //
+.highlight .kt {
+  color: $code-keyword-color;
+} // keyword.type //
+.highlight .ld {
+  color: $code-literal-color;
+} // literal.date //
+.highlight .m {
+  color: $code-literal-color;
+} // literal.number //
+.highlight .s {
+  color: $code-string-color;
+} // literal.string //
+.highlight .na {
+  color: #555;
+} // name.attribute //
+.highlight .nb {
+  color: $code-special-ident-color;
+} // name.builtin //
+.highlight .nc {
+  color: #268bd2;
+} // name.class //
+.highlight .no {
+  color: #cb4b16;
+} // name.constant //
+.highlight .nd {
+  color: #268bd2;
+} // name.decorator //
+.highlight .ni {
+  color: #cb4b16;
+} // name.entity //
+.highlight .ne {
+  color: #cb4b16;
+} // name.exception //
+.highlight .nf {
+  color: #268bd2;
+} // name.function //
+.highlight .nl {
+  color: #555;
+} // name.label //
+.highlight .nn {
+  color: #93a1a1;
+} // name.namespace //
+.highlight .nx {
+  color: #555;
+} // name.other //
+.highlight .py {
+  color: #93a1a1;
+} // name.property //
+.highlight .nt {
+  color: #268bd2;
+} // name.tag //
+.highlight .nv {
+  color: #268bd2;
+} // name.variable //
+.highlight .ow {
+  color: #859900;
+} // operator.word //
+.highlight .w {
+  color: #93a1a1;
+} // text.whitespace //
+.highlight .mf {
+  color: $code-literal-color;
+} // literal.number.float //
+.highlight .mh {
+  color: $code-literal-color;
+} // literal.number.hex //
+.highlight .mi {
+  color: $code-literal-color;
+} // literal.number.integer //
+.highlight .mo {
+  color: $code-literal-color;
+} // literal.number.oct //
+.highlight .sb {
+  color: $code-string-color;
+} // literal.string.backtick //
+.highlight .sc {
+  color: $code-string-color;
+} // literal.string.char //
+.highlight .sd {
+  color: $code-string-color;
+} // literal.string.doc //
+.highlight .s2 {
+  color: $code-string-color;
+} // literal.string.double //
+.highlight .se {
+  color: $code-string-color;
+} // literal.string.escape //
+.highlight .sh {
+  color: $code-string-color;
+} // literal.string.heredoc //
+.highlight .si {
+  color: $code-string-color;
+} // literal.string.interpol //
+.highlight .sx {
+  color: $code-string-color;
+} // literal.string.other //
+.highlight .sr {
+  color: $code-string-color;
+} // literal.string.regex //
+.highlight .s1 {
+  color: $code-string-color;
+} // literal.string.single //
+.highlight .ss {
+  color: $code-string-color;
+} // literal.string.symbol //
+.highlight .bp {
+  color: #268bd2;
+} // name.builtin.pseudo //
+.highlight .vc {
+  color: #268bd2;
+} // name.variable.class //
+.highlight .vg {
+  color: #268bd2;
+} // name.variable.global //
+.highlight .vi {
+  color: #268bd2;
+} // name.variable.instance //
+.highlight .il {
+  color: $code-literal-color;
+} // literal.number.integer.long //
+
+// Inline code (toned down border slightly):
+code.highlighter-rouge {
+  background-color: #463b4b;
+  border: 2px solid #212225;
+  color: #ffffff;
+  border-radius: 4px;
+}

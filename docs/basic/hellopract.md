@@ -2,12 +2,15 @@
 layout: default
 title: Hello, Pract!
 nav_order: 2
-permalink: /hellopract
+parent: Basic Guide
+permalink: /basic/hellopract
 ---
 
 # Hello, Pract!
 
-> Note: These examples will assume you have [installed Pract](index) into `game.ReplicatedStorage`. If you have installed Pract elsewhere, please adjust any require statements in these examples to match where you have installed Pract!
+> Note: These examples will assume you have [installed Pract](../installation) into `game.ReplicatedStorage`. If you have installed Pract elsewhere, please adjust any require statements in these examples to match where you have installed Pract!
+
+Let's honor the age-old tradition!
 
 Add a `LocalScript` in `game.StarterPlayer.StarterPlayerScripts`, in Roblox Studio or through Rojo, and paste the following code:
 ```lua
