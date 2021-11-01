@@ -80,7 +80,7 @@ local function classComponent(componentMethods: Types.ClassComponentMethods)
 			
 			return {
 				render = function(props: Types.PropsArgument)
-					_render(self)
+					return _render(self)
 				end,
 				init = function(props: Types.PropsArgument)
 					self.props = props
