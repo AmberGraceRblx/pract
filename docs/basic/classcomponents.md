@@ -15,7 +15,7 @@ Class components have an almost-identical structure to [Roact's class components
 State and Lifecycle are decoupled from components in Pract because, almost all of the time, there isn't a need to have both of these things in every single component.
 
 In the case of class components, the class' methods are pre-defined, and passed in as the first argument to `Pract.classComponent` .
-`Pract.classComponent` actually uses `Pract.withLifecycle` and `Pract.withState` under the hood to combine the two!
+`Pract.classComponent` actually uses `Pract.withLifecycle` and `Pract.withDeferredState` under the hood to combine the two!
 ```lua
 local MyClassComponent = Pract.classComponent {
     init = function(self)
