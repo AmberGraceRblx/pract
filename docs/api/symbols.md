@@ -8,5 +8,7 @@ permalink: /api/symbols
 
 # Pract Symbols
 
+> Warning: API Documentation is still a work in progresss!
+
 ## `Pract.None`
 

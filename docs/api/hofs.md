@@ -7,3 +7,5 @@ permalink: /api/hofs
 ---
 
 # Higher-Order Functions
+
+> Warning: API Documentation is still a work in progresss!
