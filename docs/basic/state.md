@@ -12,7 +12,7 @@ A _higher-order function_ (HOF) is a function that takes in another function (ca
 
 Right now we've explored ways we can design our UI using Elements, and simplifying it using Components and their associated `props`. While Components and Elements can accomplish a lot, they require the entire Pract tree to be reconciled every single time you wish to make any change to the UI whatsoever.
 
-Instead, it would be better to have some way to update only _part of our UI_ on an as-needed basis—for example, chaning the color of a button (and only that button) when hovering over it, or upticking a "coins" counter when we pick up a coin.
+Instead, it would be better to have some way to update only _part of our UI_ on an as-needed basis—for example, changing the color of a button (and only that button) when hovering over it, or upticking a "coins" counter when we pick up a coin.
 
 # State
 

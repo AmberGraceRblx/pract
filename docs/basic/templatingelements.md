@@ -1,12 +1,12 @@
 ---
 layout: default
-title: Templating
+title: Templating Elements
 nav_order: 5
 parent: Basic Guide
-permalink: basic/templating
+permalink: basic/templatingelements
 ---
 
-# Templating
+# Templating Elements
 
 In the [Hello, Pract example](hellopract), we saw two different methods of designing our UI with code:
 1. Use `Pract.create` to design our entire UI tree in code, from scratch

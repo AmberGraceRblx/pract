@@ -80,4 +80,4 @@ local myTree = Pract.mount(
 
 In the next section, we will finally cover the other types of Pract elements, which sets the library apart from Roact and allows you to write much more flexible and condensed UI code, as well as simplifying the UI design process.
 
-#### Up Next: [Templating](templating)
+#### Up Next: [Templating](templatingelements)

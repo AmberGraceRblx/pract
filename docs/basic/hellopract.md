@@ -71,4 +71,4 @@ You can modify properties of your template to change the look of the UI without 
 
 In this section, we created three different types of "Elements," which are returned when calling the `Pract.create`, `Pract.stamp`, and `Pract.decorate` functions. The next section discusses what Elements really are, the difference between the basic types of Elements, and how they are used by the Pract engine to build our UI from code and templates.
 
-#### Next Up: [Elements](elements)
+#### Next Up: [Elements](instancingelements)

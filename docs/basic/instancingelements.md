@@ -1,12 +1,12 @@
 ---
 layout: default
-title: Pract Elements
+title: "\"Create\" Elements"
 nav_order: 3
 parent: Basic Guide
-permalink: basic/elements
+permalink: basic/instancingelements
 ---
 
-# Pract Elements
+# What are Elements?
 
 _Elements_ are at the core of Pract code, and serve a similar purpose to React/[Roact](https://roblox.github.io/roact/guide/elements/) elements. In Pract, however, there are many types of elements, which can be used not just for creating new instances, but also for using pre-designed UI as a template.
 

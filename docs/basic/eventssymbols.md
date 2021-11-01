@@ -135,8 +135,19 @@ end
 ```
 
 #### Up next: Advanced guide (coming soon)
+
+Some personal notes for what's coming to the guide:
+
     - Combining elements
+    - Children symbol (maybe should be in this article instead?)
+    - Tips on organizing Pract code, and using types? Callbacks through props, etc.
+    - Refs? Is this a feature needed in Pract given what's already available?
     - Portals
     - Updating with a signal
-    - Using external state
     - Context providers/consumers
+    - Using external state effectively (Rodux, signal state singleton module pattern, attributes)
+    - Re-using input components via `Pract.combine`
+        -> Bugfix/feature: If an instance is created/found in a combine children chain, it should be detected
+        by other elements first, rather than ever search for the child via `FindFirstChild`!
+
+        This behavior is important for `Pract.combine`'s use case of having multiple elements mounted to the same host.
