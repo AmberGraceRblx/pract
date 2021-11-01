@@ -40,7 +40,7 @@ export type ClassComponentMethods = {
 		newProps: PropsArgument,
 		newState: ClassState
 	) -> boolean)?,
-	willUpdate: ((self: ClassComponentSelf) -> ())?,
+	willUpdate: ((self: ClassComponentSelf, newProps: PropsArgument, newState: ClassState) -> ())?,
 	didUpdate: ((self: ClassComponentSelf) -> ())?,
 	willUnmount: ((self: ClassComponentSelf) -> ())?,
 }

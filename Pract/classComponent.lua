@@ -50,6 +50,7 @@ local function classComponent(componentMethods: Types.ClassComponentMethods)
 						unsubscribe()
 					end
 				end,
+				forceUpdate = forceUpdate,
 			}
 			local self = setmetatable(self_without_mt, metatableIndex)
 			
@@ -59,40 +60,52 @@ local function classComponent(componentMethods: Types.ClassComponentMethods)
 				local wrapped = self[name]
 				if wrapped then
 					return function(props: Types.PropsArgument)
-						self.props = props
-						self.state = getState()
 						wrapped(self)
-						self.state = getState()
 					end
 				end
 				return nil
 			end
 			
-			local shouldUpdate; do
-				local _shouldUpdate = self.shouldUpdate
-				if _shouldUpdate then
-					shouldUpdate = function(newProps: Types.PropsArgument)
-						return _shouldUpdate(self, newProps, getState())
+			local _render = self.render
+			local _shouldUpdate = self.shouldUpdate
+			local _init = self.init
+			local willUpdate; do
+				local _willUpdate = self.willUpdate
+				if _willUpdate then
+					willUpdate = function(newProps: Types.PropsArgument)
+						_willUpdate(self, newProps, getState())
 					end
 				end
 			end
 			
 			return {
 				render = function(props: Types.PropsArgument)
-					self.props = props
-					self.state = getState()
-					local element = self:render()
-					self.state = getState()
-					return element
+					_render(self)
 				end,
-				init = wrapOptionalLifecycleMethod 'init',
-				didMount = wrapOptionalLifecycleMethod 'didMount',
-				willUpdate = wrapOptionalLifecycleMethod 'willUpdate',
-				didUpdate = wrapOptionalLifecycleMethod 'didUpdate',
-				shouldUpdate = shouldUpdate,
-				willUnmount = function(props: Types.PropsArgument)
+				init = function(props: Types.PropsArgument)
 					self.props = props
+					_init(self)
 					self.state = getState()
+				end,
+				didMount = wrapOptionalLifecycleMethod 'didMount',
+				willUpdate = willUpdate,
+				didUpdate = wrapOptionalLifecycleMethod 'didUpdate',
+				shouldUpdate = function(newProps: Types.PropsArgument)
+					local newState = getState()
+					if _shouldUpdate then
+						if _shouldUpdate(newProps, newState) == false then
+							self.state = getState()
+							self.props = newProps
+							return false
+						end
+						newState = getState()
+					end
+					self.props = newProps
+					self.state = newState -- We set state here specifically
+
+					return true
+				end,
+				willUnmount = function(props: Types.PropsArgument)
 					local cbs = {}
 					for cb in pairs(unsubscribeCBSet) do
 						table.insert(cbs, cb)
@@ -100,10 +113,8 @@ local function classComponent(componentMethods: Types.ClassComponentMethods)
 					for i = 1, #cbs do
 						task.spawn(cbs[i])
 					end
-					self.state = getState()
 					if self.willUnmount then
 						self:willUnmount()
-						self.state = getState()
 					end
 				end,
 			}

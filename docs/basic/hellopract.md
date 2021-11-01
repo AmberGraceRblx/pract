@@ -57,15 +57,15 @@ Pract.mount(element, PlayerGui)
 
 Let's design our template:
 1. Right click `game.StarterGui` and insert a `ScreenGui`. Name it `HelloPractTemplate` and set `ResetOnSpawn` to false 
-![image](https://media.istockphoto.com/vectors/coming-soon-lettering-coming-soon-for-promotion-advertisement-sale-vector-id1221240925?k=20&m=1221240925&s=612x612&w=0&h=HX77CIwJ34u7qUMpI_W5z4dDnEbHGv66mGXVTpIccv8=)
 2. Right click `HelloPractTemplate` and insert a `TextLabel`. Make sure it's named `HelloLabel` (with the correct spelling/capitalization). Edit properties like BackgroundTransparency, Font, FontSize, and TextColor3 in order to achieve the desired visual design.
-![image](https://media.istockphoto.com/vectors/coming-soon-lettering-coming-soon-for-promotion-advertisement-sale-vector-id1221240925?k=20&m=1221240925&s=612x612&w=0&h=HX77CIwJ34u7qUMpI_W5z4dDnEbHGv66mGXVTpIccv8=)
+![image](https://i.imgur.com/EkuU0vz.png)
 3. Once we have finished designing our template, drag it into our `LocalScript` so that it is parented to our `LocalScript`
-![image](https://media.istockphoto.com/vectors/coming-soon-lettering-coming-soon-for-promotion-advertisement-sale-vector-id1221240925?k=20&m=1221240925&s=612x612&w=0&h=HX77CIwJ34u7qUMpI_W5z4dDnEbHGv66mGXVTpIccv8=)
+
+![image](https://i.imgur.com/SlC39QO.png)
 
 When you run a playtest, your template will be copied into your PlayerGui, with a slight modification to the HelloLabel showing a random number between 1 and 99.
 
-![image](https://media.istockphoto.com/vectors/coming-soon-lettering-coming-soon-for-promotion-advertisement-sale-vector-id1221240925?k=20&m=1221240925&s=612x612&w=0&h=HX77CIwJ34u7qUMpI_W5z4dDnEbHGv66mGXVTpIccv8=)
+![image](https://i.imgur.com/8HJQpqP.png)
 
 You can modify properties of your template to change the look of the UI without having to edit any of the Pract code! Using templates allows your code to focus more on the functional parts of the UI, and less on the aesthetic parts, which can be separately from code.
 

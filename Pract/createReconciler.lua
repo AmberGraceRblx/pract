@@ -1,3 +1,4 @@
+local CollectionService = game:GetService("CollectionService")
 --!strict
 
 local Types = require(script.Parent.Types)
@@ -512,6 +513,7 @@ local function createReconciler(): Types.Reconciler
 		virtualNode: Types.VirtualNode,
 		willDestroy: boolean
 	)
+		local lastProps = virtualNode._currentElement.props
 		local eventMap = virtualNode._eventMap
 		if eventMap then
 			virtualNode._eventMap = nil
@@ -547,6 +549,21 @@ local function createReconciler(): Types.Reconciler
 		
 		local lastUpdateInstance = virtualNode._lastUpdateInstance
 		if lastUpdateInstance then
+			if not willDestroy then
+				local lastTags = lastProps[Symbols.CollectionServiceTags]
+				if lastTags then
+					for i = 1, #lastTags do
+						CollectionService:RemoveTag(lastUpdateInstance, lastTags[i])
+					end
+				end
+				local lastAttrs = lastProps[Symbols.Attributes]
+				if lastAttrs then
+					for attrName, value in pairs(lastAttrs) do
+						lastUpdateInstance:SetAttribute(attrName, nil)
+					end
+				end
+			end
+	
 			local lastElement = virtualNode._currentElement
 			local onUnmountCB = lastElement.props[Symbols.OnUnmountWithHost]
 			if onUnmountCB then

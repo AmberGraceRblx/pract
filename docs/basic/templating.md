@@ -20,6 +20,10 @@ Templates are instances that can be stored anywhere in roblox's instance tree. I
 
 If you are using Roblox Studio's script editor to write all of your code, you may want to store your templates directly under the `ModuleScripts` that use them. If you are using Rojo to sync your code from a folder of `.lua` files, you may want to organize all of your templates in one location (in ReplicatedStorage, StarterPlayer, or even StarterGui, for example).
 
+![Storing Templates Directly Under Modules](https://i.imgur.com/WAxZM3g.png)
+
+![Storing Templates in a Folder](https://i.imgur.com/a37ZUBp.png)
+
 However you choose to organize your templates, just make sure you are providing a valid path to these templates in your code. In the following examples, they will assume you placed your templates directly under the `LocalScript`/`ModuleScript` that uses these templates.
 
 ## Stamp Elements
@@ -50,6 +54,8 @@ local function GreetEveryone(props: {}): Pract.Element
     })
 end
 ```
+
+![Stamp Example Tree](https://i.imgur.com/ffCgtJV.png)
 
 Stamped instances will be parented to their _host instance_ and automatically named to their _host child name_
 
@@ -94,6 +100,8 @@ local function FancyGreetingCard(props: {name: string})
     })
 end
 ```
+
+![Decorate example tree](https://i.imgur.com/4ZMSBIL.png)
 
 ## Index Elements
 

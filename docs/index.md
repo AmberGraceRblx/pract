@@ -19,8 +19,6 @@ Pract allows you to design your UI entirely in code, use a template designed in 
 
 If you want a detailed guide on how to effectively use Pract's features, [click here to jump right in!](installation)
 
-> Warning: Examples in the usage guide have not been tested/edited since roblox is currently down!
-
 ## API Reference
 
 For a more techincal documentation of Pract's features, [click here!](api)
