@@ -10,12 +10,14 @@ local function withSignal(
 	signalComponentClosureCB: () -> Types.Component
 ): Types.Component
 	local finalComponent = function(props: Types.PropsArgument)
-		return {
+		local element = {
 			[Symbol_ElementKind] = Symbol_SignalComponent,
 			signal = signal,
 			makeClosure = signalComponentClosureCB,
 			props = props,
 		}
+		table.freeze(element)
+		return element
 	end
 	
 	return finalComponent

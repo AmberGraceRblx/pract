@@ -89,6 +89,12 @@ export type Reconciler = {
 	) -> PractTree,
 	updateVirtualTree: (tree: PractTree, newElement: Element) -> (),
 	unmountVirtualTree: (tree: PractTree) -> (),
+
+	createHost: (
+		instance: Instance?,
+		key: string?,
+		providers: {ContextProvider}
+	) -> HostContext
 }
 
 return nil

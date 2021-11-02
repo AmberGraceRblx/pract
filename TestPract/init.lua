@@ -1,7 +1,8 @@
 --!strict
--- Unit tester for Pract, designed as a Roblox ModuleScript instance, to be run within Roblox Studio
--- Though this is not conducive to external tooling (as of yet), Pract is and will always be written
--- in Luau, and using Luau's type syntax.
+-- Unit tester for Pract, with a standalone unit tester; ostensibly could support other unit test
+-- libraries for tooling, such as Test-EZ, but the BuiltInTester suffices for testing the Pract
+-- library on its own. Pract's current CI uses run-in-roblox to run unit tests in Luau from
+-- Roblox Studio itself.
 
 local Types = require(script.Types)
 local TestPract = {}

@@ -16,11 +16,13 @@ local function stamp(
 	props[Symbol_Children] = children
 	table.freeze(props :: Types.PropsArgument)
 	
-	return {
+	local element = {
 		[Symbol_ElementKind] = Symbol_Stamp,
 		template = template,
 		props = props,
 	}
+	table.freeze(element)
+	return element
 end
 
 return stamp

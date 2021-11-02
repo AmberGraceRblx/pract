@@ -13,7 +13,7 @@ local function withState(
 	) -> Types.Component
 ): Types.Component
 	local finalComponent = function(props: Types.PropsArgument)
-		return {
+		local element = {
 			[Symbol_ElementKind] = Symbol_StateComponent,
 			makeStateClosure = stateClosureCB,	-- This should be able to be changed without
 												-- causing a remount, since we want to be
@@ -22,6 +22,8 @@ local function withState(
 			props = props,
 			deferred = false,
 		}
+		table.freeze(element)
+		return element
 	end
 	
 	return finalComponent

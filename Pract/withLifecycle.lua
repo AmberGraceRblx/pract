@@ -9,7 +9,7 @@ local function withLifecycle(
 	lifecycleClosureCB: (forceUpdate: () -> ()) -> Types.Lifecycle
 ): Types.Component
 	local finalComponent = function(props: Types.PropsArgument)
-		return {
+		local element = {
 			[Symbol_ElementKind] = Symbol_LifecycleComponent,
 			makeLifecycleClosure = lifecycleClosureCB,	-- This should be able to be changed without
 														-- causing a remount, since we want to be
@@ -17,6 +17,8 @@ local function withLifecycle(
 														-- component wrappers.
 			props = props,
 		}
+		table.freeze(element)
+		return element
 	end
 	
 	return finalComponent
