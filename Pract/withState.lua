@@ -6,7 +6,7 @@ local Symbols = require(script.Parent.Symbols)
 local Symbol_ElementKind = Symbols.ElementKind
 local Symbol_StateComponent = Symbols.ElementKinds.StateComponent
 local function withState(
-	stateClosureCB: (
+	makeClosureCallback: (
 		getState: () -> any,
 		setState: (any) -> (),
 		subscribeState: (() -> ()) -> (() -> ())
@@ -15,7 +15,7 @@ local function withState(
 	local finalComponent = function(props: Types.PropsArgument)
 		local element = {
 			[Symbol_ElementKind] = Symbol_StateComponent,
-			makeStateClosure = stateClosureCB,	-- This should be able to be changed without
+			makeStateClosure = makeClosureCallback,	-- This should be able to be changed without
 												-- causing a remount, since we want to be
 												-- able to chain scoped higher-order
 												-- component wrappers.
