@@ -6,3 +6,7 @@ local passed = PractTest.Test(
     PractTest.BuiltInTester,
     nil
 )
+
+if not passed then
+    error('Tests have failed!', 0)
+end
