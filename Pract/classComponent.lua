@@ -4,15 +4,21 @@ local Types = require(script.Parent.Types)
 local withDeferredState = require(script.Parent.withDeferredState)
 local withLifecycle = require(script.Parent.withLifecycle)
 
+local INIT_EMPTY_STATE = {}
+table.freeze(INIT_EMPTY_STATE)
+
+local INIT_EMPTY_PROPS = {}
+table.freeze(INIT_EMPTY_PROPS)
+
 local function classComponent(componentMethods: Types.ClassComponentMethods)
 	local metatableIndex = {__index = componentMethods}
 	return withDeferredState(function(getState, setState, subscribeState)
-		setState {}
+		setState(INIT_EMPTY_STATE)
 		return withLifecycle(function(forceUpdate: () -> ())
 			--local unsubscribeForceUpdateBinding = subscribeState(forceUpdate)
 			local unsubscribeCBSet = {}--{[unsubscribeForceUpdateBinding] = true}
 			local self_without_mt: Types.ClassComponentSelf = {
-				props = {} :: Types.PropsArgument,
+				props = INIT_EMPTY_PROPS :: Types.PropsArgument,
 				state = getState() :: Types.ClassState,
 				setState = function(
 					self: Types.ClassComponentSelf,
@@ -36,6 +42,7 @@ local function classComponent(componentMethods: Types.ClassComponentMethods)
 							for key, value in pairs(partialStateUpdate) do
 								newState[key] = value
 							end
+							table.freeze(newState)
 							setState(newState)
 						end
 					else

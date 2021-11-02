@@ -11,8 +11,8 @@ export type UnitTestAsserts = {
 }
 export type It = (
     behaviorDescription: string,
-    withAssertsCallback: (
-        asserts: UnitTestAsserts
+    withExpectCallback: (
+        expect: UnitTestAsserts
     ) -> ()
 ) -> ()
 export type Describe = (
