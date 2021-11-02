@@ -18,10 +18,12 @@ local function decorate(
 
 	table.freeze(props :: Types.PropsArgument)
 	
-	return {
+	local element = {
 		[Symbol_ElementKind] = Symbol_Decorate,
 		props = props,
 	}
+	table.freeze(element)
+	return element
 end
 
 return decorate
