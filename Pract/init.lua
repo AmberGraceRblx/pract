@@ -1,9 +1,9 @@
 --!strict
 -- Created by DataBrain, licensed as public domain.
+-- Use this library to make the world a better place :)
 
 local Pract = {}
-Pract._VERSION = '0.9.5'    -- Beta version; test coverage is still needed.
-                            -- Be wary of bugs and an incomplete feature set if using in production.
+Pract._VERSION = '0.9.6_indev'
 
 local Types = require(script.Types)
 local PractGlobalSystems = require(script.PractGlobalSystems)

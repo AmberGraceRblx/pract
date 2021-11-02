@@ -15,6 +15,8 @@ local function decorate(
 	end
 	
 	;(props :: any)[Symbol_Children] = children
+
+	table.freeze(props :: Types.PropsArgument)
 	
 	return {
 		[Symbol_ElementKind] = Symbol_Decorate,

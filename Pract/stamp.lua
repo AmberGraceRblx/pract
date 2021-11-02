@@ -14,6 +14,7 @@ local function stamp(
 	local props: Types.PropsArgument = props or {}
 	
 	props[Symbol_Children] = children
+	table.freeze(props :: Types.PropsArgument)
 	
 	return {
 		[Symbol_ElementKind] = Symbol_Stamp,

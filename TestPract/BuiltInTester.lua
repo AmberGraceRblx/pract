@@ -200,7 +200,7 @@ local BuiltInTester: Types.UnitTester = function(
         local function describe(unitName: string, withIt)
             local function it(behavior: string, withAsserts)
                 local behaviorLineStr = debug.info(2, 'l')
-                local errWithTraceback: string
+                local errWithTraceback: any
                 local success = xpcall(
                     function()
                         withAsserts(asserts)

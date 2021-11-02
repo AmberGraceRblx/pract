@@ -45,6 +45,8 @@ local function create(
 	end
 	
 	;(props :: any)[Symbol_Children] = children
+
+	table.freeze(props :: Types.PropsArgument)
 	
 	return handleByType[typeof(classNameOrComponent)](
 		classNameOrComponent,
