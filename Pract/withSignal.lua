@@ -7,13 +7,13 @@ local Symbol_ElementKind = Symbols.ElementKind
 local Symbol_SignalComponent = Symbols.ElementKinds.SignalComponent
 local function withSignal(
 	signal: RBXScriptSignal,
-	signalComponentClosureCB: () -> Types.Component
+	makeClosureCallback: () -> Types.Component
 ): Types.Component
 	local finalComponent = function(props: Types.PropsArgument)
 		local element = {
 			[Symbol_ElementKind] = Symbol_SignalComponent,
 			signal = signal,
-			makeClosure = signalComponentClosureCB,
+			makeClosure = makeClosureCallback,
 			props = props,
 		}
 		table.freeze(element)
