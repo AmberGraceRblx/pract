@@ -48,10 +48,12 @@ local function create(
 
 	table.freeze(props :: Types.PropsArgument)
 	
-	return handleByType[typeof(classNameOrComponent)](
+	local element = handleByType[typeof(classNameOrComponent)](
 		classNameOrComponent,
 		props :: Types.PropsArgument
 	)
+	table.freeze(element)
+	return element
 end
 
 return create

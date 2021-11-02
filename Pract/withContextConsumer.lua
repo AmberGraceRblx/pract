@@ -11,11 +11,13 @@ local function withContextConsumer(
 	) -> Types.Component
 ): Types.Component
 	local finalComponent = function(props: Types.PropsArgument): Types.Element
-		return {
+		local element = {
 			[Symbol_ElementKind] = Symbol_ContextConsumer,
 			makeClosure = consumerComponentClosureCB,
 			props = props
 		}
+		table.freeze(element)
+		return element
 	end
 	
 	return finalComponent
