@@ -9,4 +9,4 @@ has_toc: true
 
 # Pract API reference
 
-> Warning: API Documentation is still a work in progresss!
+> Warning: API Documentation is still a work in progress, and Pract's feature set has not yet been finalized.

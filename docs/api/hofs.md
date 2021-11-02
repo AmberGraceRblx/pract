@@ -8,6 +8,8 @@ permalink: /api/hofs
 
 # Higher-Order Functions
 
+> Warning: API Documentation is still a work in progress, and Pract's feature set has not yet been finalized.
+
 [Higher-Order Functions](../basic/state#higher-order-functions), in Pract, are functions that take another function (or table of functions) as an argument, and return a [Component](../basic/components) and essentially "supercharges" another component that we define.
 
 Typically the argument passed in is a function that creates a [Closure](https://en.wikipedia.org/wiki/Closure_(computer_programming)) with our supercharged parameters passed in, and should return a `Component` that renders based on these supercharged parameters.
@@ -59,6 +61,19 @@ See: [Lifecycle](../basic/lifecycle) for a more detailed usage guide on `Pract.w
 
 Returns a [Component](../basic/components); takes in a closure creator function, with a `forceUpdate` function that will trigger an update (throttled to only update at most once per frame), and returns a `Pract.Lifecycle` object. This lifecycle object is a table of functions that must include a `render` function, which is a component that will be called every time an update happens. Other functions on this table will run at different points of the component's lifecycle when mounted. See [Lifecycle](../basic/lifecycle#putting-it-all-together) for a full list of lifecycle functions.
 
+Lifecycle type definition:
+```lua
+type Pract.Lifecycle = {
+	render: Pract.Component,
+	init: ((props: any) -> ())?,
+	didMount: ((props: any) ->())?,
+	shouldUpdate: ((newProps: any, oldProps: any) -> boolean)?,
+	willUpdate: ((props: any, oldProps: any) -> ())?,
+	didUpdate: ((props: any) -> ())?,
+	willUnmount: ((props: any) -> ())?,
+}
+```
+
 ## Pract.withSignal
 
 ```lua
@@ -103,3 +118,28 @@ Pract.classComponent(
 ```
 
 Returns a [Component](../basic/components); Takes in a table of class methods, which must include a `render` function. These methods are similar to those on a Lifecycle table, except that they take in a special `self` argument representing the mounted class component. See [Class Components](../basic/classcomponents) for a more detailed usage guide.
+
+ClassComponentMethods type definition:
+```lua
+type Pract.ClassComponentMethods = {
+	-- You can add custom methods or values to this table, as it will be used as the
+	-- __index table for the self object's metatable.
+	[any]: any,
+    
+	render: (self: Pract.ClassComponentSelf) -> Element,
+	init: ((self: Pract.ClassComponentSelf) -> ())?,
+	didMount: ((self: Pract.ClassComponentSelf) ->())?,
+	shouldUpdate: ((
+		self: Pract.ClassComponentSelf,
+		newProps: Pract.PropsArgument,
+		newState: Pract.ClassState
+	) -> boolean)?,
+	willUpdate: ((
+		self: Pract.ClassComponentSelf,
+		newProps: Pract.PropsArgument,
+		newState: Pract.ClassState
+	) -> ())?,
+	didUpdate: ((self: Pract.ClassComponentSelf) -> ())?,
+	willUnmount: ((self: Pract.ClassComponentSelf) -> ())?,
+}
+```

@@ -110,10 +110,11 @@ local function createReconciler(): Types.Reconciler
 					if virtualNode._wasUnmounted then return end
 					
 					local currentElement = virtualNode._currentElement
-					local cb = currentElement.props[Symbols.OnMountWithHost]
+					local props = currentElement.props
+					local cb = props[Symbols.OnMountWithHost]
 					local instance = virtualNode._lastUpdateInstance
 					if cb and instance then
-						cb(instance, function(cleanupCallback: () -> ())
+						cb(instance, props, function(cleanupCallback: () -> ())
 							if virtualNode._wasUnmounted then
 								cleanupCallback()
 								return
@@ -146,10 +147,11 @@ local function createReconciler(): Types.Reconciler
 					virtualNode._collateDeferredUpdateCallback = nil
 					if virtualNode._wasUnmounted then return end
 					
-					local cb = virtualNode._currentElement.props[Symbols.OnUpdateWithHost]
+					local props = virtualNode._currentElement.props
+					local cb = props[Symbols.OnUpdateWithHost]
 					local instance = virtualNode._lastUpdateInstance
 					if cb and instance then
-						cb(instance)
+						cb(instance, props)
 					end
 				end)
 			end
