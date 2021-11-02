@@ -56,38 +56,6 @@ export type Lifecycle = {
 
 
 
--- Unit testing types
-export type UnitTestAsserts = {
-	truthy: (value: any) -> (),
-	falsy: (value: any) -> (),
-	errors: (cb: () -> ()) -> (),
-	no_errors: (cb: () -> ()) -> (),
-	equal: (expected: any, actual: any) -> (),
-	deep_equal: (expected: any, actual: any) -> (),
-	not_equal: (expected: any, actual: any) -> (),
-	not_deep_equal: (expected: any, actual: any) -> (),
-}
-export type UnitTester = (
-	test: (
-		moduleToTest: ModuleScript,
-		withDescribeCallback: (
-			describe: (
-				unitName: string,
-				withItCallback: (
-					it: (
-						behaviorDescription: string,
-						withAssertsCallback: (
-							asserts: UnitTestAsserts
-						) -> ()
-					) -> ()
-				) -> ()
-			) -> ()
-		) -> ()
-	) -> ()
-) -> ()
-
-
-
 -- Internal reconciler types
 export type ContextProvider = {
 	find: (name: string) -> any?,
@@ -121,8 +89,6 @@ export type Reconciler = {
 	) -> PractTree,
 	updateVirtualTree: (tree: PractTree, newElement: Element) -> (),
 	unmountVirtualTree: (tree: PractTree) -> (),
-	
-	mountVirtualNode: (element: Element | boolean, host: HostContext) -> ()
 }
 
 return nil

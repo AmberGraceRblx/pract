@@ -8,6 +8,7 @@ local PractGlobalSystems = {}
 
 PractGlobalSystems.HeartbeatFrameCount = 0
 PractGlobalSystems.ON_CHILD_TIMEOUT_INTERVAL = 10
+PractGlobalSystems.HeartbeatSignal = RunService.Heartbeat
 
 local whileRunningConns = {} :: {RBXScriptConnection}
 local running = false
@@ -17,7 +18,7 @@ function PractGlobalSystems.Run()
 	
 	table.insert(
 		whileRunningConns,
-		RunService.Heartbeat:Connect(function()
+		PractGlobalSystems.HeartbeatSignal:Connect(function()
 			PractGlobalSystems.HeartbeatFrameCount = PractGlobalSystems.HeartbeatFrameCount + 1
 		end)
 	)
