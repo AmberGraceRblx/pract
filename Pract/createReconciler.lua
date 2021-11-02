@@ -1555,8 +1555,6 @@ local function createReconciler(): Types.Reconciler
 		mountVirtualTree = mountVirtualTree,
 		updateVirtualTree = updateVirtualTree,
 		unmountVirtualTree = unmountVirtualTree,
-		
-		mountVirtualNode = mountVirtualNode,
 	}
 	
 	return reconciler

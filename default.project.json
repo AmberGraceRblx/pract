@@ -6,6 +6,9 @@
       "$className": "ReplicatedStorage",
       "Pract": {
         "$path": "Pract"
+      },
+      "TestPract": {
+        "$path": "TestPract"
       }
     }
   }
