@@ -13,6 +13,14 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: recursive
+      - name: download roblox install script
+        run: Invoke-WebRequest -Uri "https://raw.githubusercontent.com/OrbitalOwen/roblox-win-installer/master/install.py" -OutFile install.py
+      - name: download settings file
+        run: Invoke-WebRequest -Uri "https://raw.githubusercontent.com/OrbitalOwen/roblox-win-installer/master/GlobalSettings_13.xml" -OutFile GlobalSettings_13.xml
+      - name: install pip deps
+        run: pip install wget psutil
+      - name: install roblox
+        run: python install.py "${{ secrets.ROBLOSECURITY }}"
       - name: install foreman
         uses: rojo-rbx/setup-foreman@v1
         with:
