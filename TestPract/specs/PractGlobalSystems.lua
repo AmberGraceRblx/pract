@@ -13,26 +13,26 @@ local spec: Types.Spec = function(practModule, describe)
         end)
 
         local customHeartbeatEvent = Instance.new('BindableEvent')
-        it('runs with a custom HeartbeatSignal', function(asserts)
+        it('runs with a custom HeartbeatSignal', function(expect)
             PractGlobalSystems.HeartbeatFrameCount = 0
             PractGlobalSystems.HeartbeatSignal = customHeartbeatEvent.Event
             PractGlobalSystems.Run()
 
-            asserts.equal(0, PractGlobalSystems.HeartbeatFrameCount)
+            expect.equal(0, PractGlobalSystems.HeartbeatFrameCount)
         end)
 
-        it('upticks HeartbeatFrameCount when the HeartbeatSignal fires', function(asserts)
+        it('upticks HeartbeatFrameCount when the HeartbeatSignal fires', function(expect)
             customHeartbeatEvent:Fire()
-            asserts.equal(1, PractGlobalSystems.HeartbeatFrameCount)
+            expect.equal(1, PractGlobalSystems.HeartbeatFrameCount)
             customHeartbeatEvent:Fire()
-            asserts.equal(2, PractGlobalSystems.HeartbeatFrameCount)
+            expect.equal(2, PractGlobalSystems.HeartbeatFrameCount)
         end)
 
-        it('only upticks HeartbeatFrameCount while running', function(asserts)
+        it('only upticks HeartbeatFrameCount while running', function(expect)
             PractGlobalSystems.Stop()
-            asserts.equal(2, PractGlobalSystems.HeartbeatFrameCount)
+            expect.equal(2, PractGlobalSystems.HeartbeatFrameCount)
             customHeartbeatEvent:Fire()
-            asserts.equal(2, PractGlobalSystems.HeartbeatFrameCount)
+            expect.equal(2, PractGlobalSystems.HeartbeatFrameCount)
         end)
     end)
 end

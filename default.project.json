@@ -10,6 +10,12 @@
       "TestPract": {
         "$path": "TestPract"
       }
+    },
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "RunPractTest": {
+        "$path": "RunPractTest.server.lua"
+      }
     }
   }
 }
