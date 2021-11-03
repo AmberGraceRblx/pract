@@ -13,9 +13,11 @@ permalink: /api/elements
 ## Pract.create
 
 ```lua
-Pract.withState(
-    closureCreator: (getState)
-): Pract.Element
+Pract.create(
+	classNameOrComponent: string | Types.Component,
+	props: Types.PropsArgument?,
+	children: Types.ChildrenArgument?
+): Types.Element
 ```
 
 Creates an [element](../basic/instancingelements) representing a newly-created instance or component. Elements are like blueprints, which Pract uses to determine how to create/destroy/modify instances to match this blueprint.
