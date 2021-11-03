@@ -246,4 +246,4 @@ Try to avoid repeating yourself, and make your own helper higher-order functions
 #### Up Next: ???
 
 You've reached the end of the Pract documentation.
-Much of this documentation is a first draft, and may be subject to change in the future. Collaborators would be appreciated in improving the documentation and functionality of `Pract` in general!
+Much of this documentation is a first draft, and may be subject to change in the future. Collaborators would be appreciated in improving the documentation and functionality of the Pract library in general!
