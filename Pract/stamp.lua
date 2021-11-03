@@ -13,8 +13,12 @@ local function stamp(
 ): Types.Element
 	local props: Types.PropsArgument = props or {}
 	
-	props[Symbol_Children] = children
-	table.freeze(props :: Types.PropsArgument)
+	if children ~= nil then
+		(props :: any)[Symbol_Children] = children
+	end
+	if not table.isfrozen(props :: Types.PropsArgument) then
+		table.freeze(props :: Types.PropsArgument)
+	end
 	
 	local element = {
 		[Symbol_ElementKind] = Symbol_Stamp,

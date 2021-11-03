@@ -79,11 +79,11 @@ type Pract.Lifecycle = {
 ```lua
 Pract.withSignal(
 	signal: RBXScriptSignal,
-	makeClosureCallback: () -> Pract.Component
+	wrappedComponent: Pract.Component
 ): Pract.Component
 ```
 
-Returns a [Component](../basic/components); takes in a signal (to be connected when mounted and disconnected when unmounted). Every time the signal is fired, an update in the component returned by `makeClosureCallback` will be triggered.
+Returns a [Component](../basic/components); takes in a signal (to be connected when mounted and disconnected when unmounted). Every time the signal is fired, an update in the wrapped component will be triggered.
 
 ## Pract.withContextProvider
 
@@ -125,7 +125,7 @@ type Pract.ClassComponentMethods = {
 	-- You can add custom methods or values to this table, as it will be used as the
 	-- __index table for the self object's metatable.
 	[any]: any,
-    
+
 	render: (self: Pract.ClassComponentSelf) -> Element,
 	init: ((self: Pract.ClassComponentSelf) -> ())?,
 	didMount: ((self: Pract.ClassComponentSelf) ->())?,

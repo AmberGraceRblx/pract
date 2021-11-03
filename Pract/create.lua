@@ -44,9 +44,13 @@ local function create(
 		props = {}
 	end
 	
-	;(props :: any)[Symbol_Children] = children
+	if children ~= nil then
+		(props :: any)[Symbol_Children] = children
+	end
 
-	table.freeze(props :: Types.PropsArgument)
+	if not table.isfrozen(props :: Types.PropsArgument) then
+		table.freeze(props :: Types.PropsArgument)
+	end
 	
 	local element = handleByType[typeof(classNameOrComponent)](
 		classNameOrComponent,
