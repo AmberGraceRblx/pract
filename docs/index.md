@@ -15,11 +15,11 @@ Pract takes inspiration from Facebook's [React](https://reactjs.org/) and LPGHat
 
 Pract allows you to design your UI entirely in code, use a template designed in roblox's UI editor, or a mix of both. This documentation will show usage examples and detail how to effectively design your own UI code with the library's features.
 
-## Basic Guide 
+## [Basic Guide](installation)
 
-If you want a detailed guide on how to effectively use Pract's features, [click here to jump right in!](installation)
+For a step-by-step guide with examples, [click here to jump right in!](installation)
 
-## API Reference
+## [API Reference](api)
 
 > Warning: API Documentation is still a work in progress, and Pract's feature set has not yet been finalized.
 
