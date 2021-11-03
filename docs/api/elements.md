@@ -14,10 +14,10 @@ permalink: /api/elements
 
 ```lua
 Pract.create(
-	classNameOrComponent: string | Types.Component,
-	props: Types.PropsArgument?,
-	children: Types.ChildrenArgument?
-): Types.Element
+	classNameOrComponent: string | Pract.Component,
+	props: Pract.PropsArgument?,
+	children: Pract.ChildrenArgument?
+): Pract.Element
 ```
 
 Creates an [element](../basic/instancingelements) representing a newly-created instance or component. Elements are like blueprints, which Pract uses to determine how to create/destroy/modify instances to match this blueprint.
