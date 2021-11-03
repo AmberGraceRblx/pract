@@ -23,25 +23,25 @@ local ContextSelector = Pract.withDeferredState(function(getContext, setContext)
     return function(props: {})
         local currentContext = Pract.combine() -- Empty element if no context is selected
         if getContext() == 'MainHUD' then
-            return Pract.create(MainHUD, {
+            currentContext = Pract.create(MainHUD, {
                 menuButtonClicked = function(menuName: string)
                     setContext(menuName)
                 end
             })
         elseif getContext() == 'Menu1' then
-            return Pract.create(Menu1, {
+            currentContext = Pract.create(Menu1, {
                 exitButtonClicked = function()
                     setContext('MainHUD')
                 end
             })
         elseif getContext() == 'Menu2' then
-            return Pract.create(Menu2, {
+            currentContext = Pract.create(Menu2, {
                 exitButtonClicked = function()
                     setContext('MainHUD')
                 end
             })
         elseif getContext() == 'Menu3' then
-            return Pract.create(Menu3, {
+            currentContext = Pract.create(Menu3, {
                 exitButtonClicked = function()
                     setContext('MainHUD')
                 end
@@ -62,7 +62,7 @@ local function App(props: {})
         AppGui = Pract.create(ContextSelector)
     }
 end
-Pract.Mount(App, game.Players.LocalPlayer:WaitForChild('PlayerGui'))
+Pract.mount(Pract.create(App), game.Players.LocalPlayer:WaitForChild('PlayerGui'))
 ```
 
 While conditionally switching our context in this pattern may be a necessary evil, notice how each of our menus has to specify a callback for when any navigation button is clicked (such as an "exit" button in our menus).
@@ -102,7 +102,7 @@ local ContextSelector = Pract.withDeferredState(function(getContext, setContext)
     end
     
     -- Since withContextProvider returns a component, we can chain it here!
-    return Pract.withContextProvider(function(provide))
+    return Pract.withContextProvider(function(provide)
         -- We can expose our navigateToContext function through the provide function!
         provide('navigateToContext', navigateToContext)
 
@@ -116,8 +116,7 @@ local ContextSelector = Pract.withDeferredState(function(getContext, setContext)
                 }
             }
         end
-    end
-    end
+    end)
 end)
 local function App(props: {})
     return Pract.index {
@@ -125,7 +124,7 @@ local function App(props: {})
         AppGui = Pract.create(ContextSelector)
     }
 end
-Pract.Mount(App, game.Players.LocalPlayer:WaitForChild('PlayerGui'))
+Pract.mount(Pract.create(App), game.Players.LocalPlayer:WaitForChild('PlayerGui'))
 ```
 
 ## Consuming objects provided by an ancestor component

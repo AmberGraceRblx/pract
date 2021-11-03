@@ -13,16 +13,16 @@ A unique feature of Pract is that the library allows and encouraging _mounting m
 `Pract.combine` will mount multiple elements to the same hostContext. One direct use case is having re-usable input-handling components
 
 ```lua
-local function HoverInput(props: {began: () -> (), ended: () -> ())})
+local function HoverInput(props: {began: () -> (), ended: () -> ()})
     return Pract.decorate {
         InputBegan = function(rbx: TextButton, input: InputObject)
             if input.UserInputType == Enum.UserInputType.MouseMovement then
-                props.hoverBegan()
+                props.began()
             end
         end,
         InputEnded = function(rbx: TextButton, input: InputObject)
             if input.UserInputType == Enum.UserInputType.MouseMovement then
-                props.hoverEnded()
+                props.ended()
             end
         end,
         -- Though this currently only captures desktop hovering, we could potentially use this to
