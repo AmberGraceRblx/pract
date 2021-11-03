@@ -3,7 +3,7 @@
 -- Use this library to make the world a better place :)
 
 local Pract = {}
-Pract._VERSION = '0.9.6_indev'
+Pract._VERSION = '0.9.6'
 
 local Types = require(script.Types)
 local PractGlobalSystems = require(script.PractGlobalSystems)
