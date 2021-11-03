@@ -1,6 +1,8 @@
 {
-	"mode": "strict",
+	"languageMode": "strict",
 	"lint": { "*": true },
 	"lintErrors": true,
-	"globals": []
+	"globals": [
+		"game", "script", "task", "Instance"
+	]
 }
