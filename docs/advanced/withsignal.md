@@ -10,7 +10,7 @@ permalink: advanced/withsignal
 
 So far, we've seen components/elements that update with props and state. However, there may be instances where it is better to update our elements once every frame, or every time a signal fires in general.
 
-`Pract.withSignal` is a higher-order function that updates the wrapped component everytime props change, or the wrapped signal fires.
+`Pract.withSignal` is a higher-order function that updates the wrapped component everytime props change, or the wrapped signal fires. Unlike other higher-order functions, `withSignal` directly takes a component in as an argument, rather than a closure creator that returns a component.
 
 The following example takes our previous example using [Portals](./portals), and updates each HUD Marker every frame to match the position of an adornee!
 ```lua

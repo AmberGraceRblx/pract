@@ -843,7 +843,7 @@ local function createReconciler(): Types.Reconciler
 			
 			virtualNode._child = updateVirtualNode(
 				virtualNode._child,
-				virtualNode._renderClosure(newElement.props)
+				newElement.render(newElement.props)
 			)
 			
 			return virtualNode
@@ -1305,19 +1305,18 @@ local function createReconciler(): Types.Reconciler
 		end
 		mountByElementKind[ElementKinds.SignalComponent] = function(virtualNode)
 			local element = virtualNode._currentElement
-			local closure = element.makeClosure()
 			virtualNode._child = mountVirtualNode(
-				closure(element.props),
+				element.render(element.props),
 				virtualNode._hostContext
 			)
-			virtualNode._renderClosure = closure
 			virtualNode._connection = element.signal:Connect(function()
 				if virtualNode._wasUnmounted then return end
 				
-				local props = virtualNode._currentElement.props
+				local currentElement = virtualNode._currentElement
+				local props = currentElement.props
 				virtualNode._child = updateVirtualNode(
 					virtualNode._child,
-					virtualNode._renderClosure(props)
+					currentElement.render(props)
 				)
 			end)
 		end

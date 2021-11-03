@@ -9,20 +9,20 @@ local spec: Types.Spec = function(practModule, describe)
     describe('withSignal', function(it)
         local signal = Instance.new('BindableEvent').Event
         it('should wrap a component', function(expect)
-            local wrappedClosureCreator = function() end
-            local finalComponent = withSignal(signal, wrappedClosureCreator)
+            local wrappedComponent = function() end
+            local finalComponent = withSignal(signal, wrappedComponent)
             
             expect.truthy(finalComponent)
         end)
         it('should return a component that returns a unique element', function(expect)
-            local wrappedClosureCreator = function() end
-            local finalComponent = withSignal(signal, wrappedClosureCreator)
+            local wrappedComponent = function() end
+            local finalComponent = withSignal(signal, wrappedComponent)
             local props = {}
             local element = finalComponent(props)
             
             expect.equal(Symbols.ElementKinds.SignalComponent, element[Symbols.ElementKind])
             expect.equal(props, element.props)
-            expect.equal(wrappedClosureCreator, element.makeClosure)
+            expect.equal(wrappedComponent, element.render)
             expect.equal(signal, element.signal)
         end)
     end)

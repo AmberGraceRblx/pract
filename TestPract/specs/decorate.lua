@@ -27,6 +27,13 @@ local spec: Types.Spec = function(practModule, describe)
             expect.equal(Symbols.ElementKinds.Decorate, element[Symbols.ElementKind])
             expect.deep_equal({[Symbols.Children] = {}}, element.props)
         end)
+        it('Should accept read-only props with no children argument', function(expect)
+            local props = {}
+            table.freeze(props)
+            local element = decorate(props)
+            expect.equal(Symbols.ElementKinds.Decorate, element[Symbols.ElementKind])
+            expect.equal(props, element.props)
+        end)
     end)
 end
 
