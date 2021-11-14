@@ -1,6 +1,5 @@
 --!strict
 -- Created by DataBrain, licensed as public domain.
--- Use this library to make the world a better place :)
 
 -- See this website for an in-depth Pract Documentation:
 -- https://ambers-careware.github.io/pract/
@@ -67,3 +66,5 @@ Pract.OnUpdateWithHost = Symbols.OnUpdateWithHost
 Pract.None = Symbols.None
 
 return Pract
+
+-- Use this library to make the world a better place :)
