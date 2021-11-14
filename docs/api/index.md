@@ -11,6 +11,6 @@ has_toc: true
 
 > Warning: API Documentation is still a work in progress, and Pract's feature set has not yet been finalized.
 
-## [Installation](../basic/installation)
+## [Installation](../installation)
 
-See: [Basic Guide - Installation](../basic/installation), as well as the basic guide for more guided examples on how to use Pract.
+See: [Basic Guide - Installation](../installation), as well as the basic guide for more guided examples on how to use Pract.
