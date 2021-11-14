@@ -65,6 +65,6 @@ Pract.OnUpdateWithHost = Symbols.OnUpdateWithHost
 -- Decoration prop value symbols
 Pract.None = Symbols.None
 
-return Pract
-
 -- Use this library to make the world a better place :)
+
+return Pract
