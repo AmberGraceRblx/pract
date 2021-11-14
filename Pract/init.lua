@@ -2,8 +2,11 @@
 -- Created by DataBrain, licensed as public domain.
 -- Use this library to make the world a better place :)
 
+-- See this website for an in-depth Pract Documentation:
+-- https://ambers-careware.github.io/pract/
+
 local Pract = {}
-Pract._VERSION = '0.9.6'
+Pract._VERSION = '0.9.6_indev'
 
 local Types = require(script.Types)
 local PractGlobalSystems = require(script.PractGlobalSystems)
