@@ -14,6 +14,7 @@ PractGlobalSystems.Run()
 -- Public types
 export type Tree = Types.PractTree
 export type Component = Types.Component
+export type ComponentTyped<PropsType> = Types.ComponentTyped<PropsType>
 export type Element = Types.Element
 export type PropsArgument = Types.PropsArgument
 export type ChildrenArgument = Types.ChildrenArgument
