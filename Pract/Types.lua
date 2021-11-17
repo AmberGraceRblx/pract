@@ -16,6 +16,7 @@ export type Element = {
 	[any]: any,
 }
 export type Component = (props: any) -> Element
+export type ComponentTyped<PropsType> = (props: PropsType) -> Element
 --export type ComponentTyped<P> = (props: P) -> any
 export type ClassState = {[string]: any}
 export type ClassStateUpdateThunk = (state: ClassState, props: PropsArgument) -> ClassState
