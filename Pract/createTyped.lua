@@ -2,8 +2,12 @@
 
 local Types = require(script.Parent.Types)
 
-local createTyped: <PropsType>(component: (PropsType) -> Types.Element, props: PropsType) = function(component, props)
+type CreateTyped = <PropsType>(
+	component: (PropsType) -> Types.Element,
+	props: PropsType
+) -> (Types.Element)
+local createTyped: CreateTyped = function(component, props)
 	return component(props)
-end
+end :: any
 
 return createTyped
