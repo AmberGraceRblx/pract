@@ -26,7 +26,10 @@ export type Lifecycle = Types.Lifecycle
 
 -- Base element functions
 Pract.create = require(script.create)
-Pract.createTyped = require(script.createTyped)
+Pract.createTyped = (Pract.create :: any) :: <PropsType>(
+	component: (PropsType) -> Types.Element,
+	props: PropsType
+) -> (Types.Element)
 Pract.index = require(script.index)
 Pract.stamp = require(script.stamp)
 Pract.decorate = require(script.decorate)
