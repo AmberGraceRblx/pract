@@ -29,7 +29,8 @@ export type ClassComponentSelf = {
 		self: ClassComponentSelf,
 		partialStateUpdate: ClassStateUpdate
 	) -> (),
-	subscribeState: (self: ClassComponentSelf, listener: () -> ()) -> (() -> ())
+	subscribeState: (self: ClassComponentSelf, listener: () -> ()) -> (() -> ()),
+	forceUpdate: (self: ClassComponentSelf) -> (),
 }
 export type ClassComponentMethods = {
 	[any]: any,
