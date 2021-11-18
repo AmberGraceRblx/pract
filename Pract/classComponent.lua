@@ -102,7 +102,7 @@ local function classComponent(componentMethods: Types.ClassComponentMethods)
 				shouldUpdate = function(newProps: Types.PropsArgument)
 					local newState = getState()
 					if _shouldUpdate then
-						if _shouldUpdate(newProps, newState) == false then
+						if _shouldUpdate(self, newProps, newState) == false then
 							self.state = getState()
 							self.props = newProps
 							return false
