@@ -14,9 +14,9 @@ permalink: /api/elements
 
 ```lua
 Pract.create(
-	classNameOrComponent: string | Pract.Component,
-	props: Pract.PropsArgument?,
-	children: Pract.ChildrenArgument?
+    classNameOrComponent: string | Pract.Component,
+    props: Pract.PropsArgument?,
+    children: Pract.ChildrenArgument?
 ): Pract.Element
 ```
 
@@ -27,6 +27,7 @@ If the first argument to `Pract.create` is a string, Pract will call `Instance.n
 The `children` argument is shorthand for `Pract.Children` and will override that symbol in props, if provided. The children table should be a record with the child names as keys, and child elements as values. The keys will determine the [host child names](../basic/templatingelements#host-context) of the child elements when mounted.
 
 If the first argument to `Pract.create` is a [Component](../basic/components) (a function, typed `(Pract.PropsArgument) -> Pract.Element`), Pract will call this component when mounted or updating with the props provided as the component's first argument, and then mount or update the component's returned elements to the same host context.
+
 
 ## Pract.stamp
 
@@ -93,3 +94,32 @@ Pract.combine(
 See: [State](../advanced/combine) for more detailed examples using `Pract.combine`
 
 Returns an element which instructs pract to mount multiple elements with the same host context. A good use case for this is having components dedicated to user input mounted together with components, which decorate the same instance. With `Pract.combine`, user input components can be re-used, while visual components can be more specialized.
+
+## Pract.createTyped
+
+
+```lua
+Pract.createTyped<PropsType>(
+    component: ComponentTyped<PropsType>,
+    props: PropsType
+) -> (Types.Element)
+```
+
+Creates a create element representing a Component. Will respect the Props typing for that component, if defined via a `ComponentTyped<PropsType>` type annotation.
+e.g.
+```lua
+export type Props = {
+    glowColor: Color3
+}
+local MyComponent: Pract.ComponentTyped<Props> = function(props)
+    return Pract.stamp(path.to.my.template, {
+        ImageColor3 = props.glowColor
+    }
+end
+
+-- . . .
+
+local myElement = Pract.createTyped(MyComponent, { -- This props table is properly typechecked by luau!
+    glowColor = Color3.fromRGB(255, 0, 0),
+})
+```
