@@ -1191,7 +1191,6 @@ local function createReconciler(): Types.Reconciler
 		
 		mountByElementKind[ElementKinds.StateComponent] = function(virtualNode)
 			local currentState = nil :: any
-			local deferredNextState = nil :: any
 			local stateListenerSet = {} :: {[() -> ()]: boolean}
 			local lastDeferredChangeHeartbeatCount = -1
 			local function getState()
@@ -1208,11 +1207,10 @@ local function createReconciler(): Types.Reconciler
 					return
 				end
 				
-				local saveState = currentState
+				currentState = nextState
+
 				local element = virtualNode._currentElement
 				if element.deferred then
-					deferredNextState = nextState
-					
 					if not virtualNode._collateDeferredState then
 						virtualNode._collateDeferredState = true
 						task.defer(function()
@@ -1227,11 +1225,6 @@ local function createReconciler(): Types.Reconciler
 							
 							-- Resume
 							virtualNode._collateDeferredState = nil
-							if virtualNode._wasUnmounted then
-								currentState = deferredNextState
-								return
-							end
-							currentState = deferredNextState
 							
 							local listenersToCall = {}
 							for cb in pairs(stateListenerSet) do
@@ -1257,8 +1250,6 @@ local function createReconciler(): Types.Reconciler
 						end)
 					end
 				else
-					currentState = nextState
-					
 					local listenersToCall = {}
 					for cb in pairs(stateListenerSet) do
 						table.insert(listenersToCall, cb)
