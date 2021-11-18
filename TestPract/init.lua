@@ -25,7 +25,7 @@ function TestPract.Test(
     if _tester then
         tester = _tester
     else
-        tester = require(copyTestPract.BuiltInTester)
+        tester = (require :: any)(copyTestPract.BuiltInTester)
     end
 
     local modules = copyTestPract.specs:GetChildren()

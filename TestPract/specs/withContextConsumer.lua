@@ -3,8 +3,8 @@
 local Types = require(script.Parent.Parent.Types)
 
 local spec: Types.Spec = function(practModule, describe)
-    local withContextConsumer: any = require(practModule.withContextConsumer)
-    local Symbols: any = require(practModule.Symbols)
+    local withContextConsumer = (require :: any)(practModule.withContextConsumer)
+    local Symbols = (require :: any)(practModule.Symbols)
 
     describe('withContextConsumer', function(it)
         it('should wrap a component', function(expect)

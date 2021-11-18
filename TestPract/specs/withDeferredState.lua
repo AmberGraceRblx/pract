@@ -3,8 +3,8 @@
 local Types = require(script.Parent.Parent.Types)
 
 local spec: Types.Spec = function(practModule, describe)
-    local withDeferredState: any = require(practModule.withDeferredState)
-    local Symbols: any = require(practModule.Symbols)
+    local withDeferredState = (require :: any)(practModule.withDeferredState)
+    local Symbols = (require :: any)(practModule.Symbols)
 
     describe('withDeferredState', function(it)
         it('should wrap a component', function(expect)

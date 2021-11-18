@@ -3,12 +3,12 @@
 local Types = require(script.Parent.Parent.Types)
 
 local spec: Types.Spec = function(practModule, describe)
-    local PractGlobalSystems: any = require(practModule.PractGlobalSystems)
+    local PractGlobalSystems = (require :: any)(practModule.PractGlobalSystems)
 
     describe('PractGlobalSystems', function(it)
         it('initializes by requiring the Pract module and stopping it', function(asserts)
             -- Global systems should run as a side effect of requiring Pract
-            require(practModule)
+            (require :: any)(practModule)
             PractGlobalSystems.Stop()
         end)
 

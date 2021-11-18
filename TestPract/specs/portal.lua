@@ -3,8 +3,8 @@
 local Types = require(script.Parent.Parent.Types)
 
 local spec: Types.Spec = function(practModule, describe)
-    local portal: any = require(practModule.portal)
-    local Symbols: any = require(practModule.Symbols)
+    local portal = (require :: any)(practModule.portal)
+    local Symbols = (require :: any)(practModule.Symbols)
 
     describe('portal', function(it)
         local HOST_INSTANCE = workspace

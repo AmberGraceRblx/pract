@@ -3,8 +3,8 @@
 local Types = require(script.Parent.Parent.Types)
 
 local spec: Types.Spec = function(practModule, describe)
-    local index: any = require(practModule.index)
-    local Symbols: any = require(practModule.Symbols)
+    local index = (require :: any)(practModule.index)
+    local Symbols = (require :: any)(practModule.Symbols)
 
     describe('index', function(it)
         it('Should accept no children', function(expect)

@@ -246,7 +246,7 @@ local BuiltInTester: Types.UnitTester = function(
         local module = modules[i]
         local spec
         local success, err: any = pcall(function()
-            spec = require(module)
+            spec = (require :: any)(module)
             spec(practLibraryLocation, makeDescribe(module:GetFullName()))
         end)
         if not success then

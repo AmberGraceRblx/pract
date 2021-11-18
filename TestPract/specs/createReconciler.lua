@@ -4,10 +4,10 @@
 local Types = require(script.Parent.Parent.Types)
 
 local spec: Types.Spec = function(practModule, describe)
-    local PractGlobalSystems: any = require(practModule.PractGlobalSystems)
-    local Symbols: any = require(practModule.Symbols)
-    local createReconciler = require(practModule.createReconciler)
-    local Pract: any = require(practModule)
+    local PractGlobalSystems = (require :: any)(practModule.PractGlobalSystems)
+    local Symbols = (require :: any)(practModule.Symbols)
+    local createReconciler = (require :: any)(practModule.createReconciler)
+    local Pract = (require :: any)(practModule)
 
     local customHeartbeat = Instance.new('BindableEvent')
 

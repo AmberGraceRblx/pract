@@ -3,8 +3,8 @@
 local Types = require(script.Parent.Parent.Types)
 
 local spec: Types.Spec = function(practModule, describe)
-    local withSignal: any = require(practModule.withSignal)
-    local Symbols: any = require(practModule.Symbols)
+    local withSignal = (require :: any)(practModule.withSignal)
+    local Symbols = (require :: any)(practModule.Symbols)
 
     describe('withSignal', function(it)
         local signal = Instance.new('BindableEvent').Event

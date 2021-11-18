@@ -3,8 +3,8 @@
 local Types = require(script.Parent.Parent.Types)
 
 local spec: Types.Spec = function(practModule, describe)
-    local create: any = require(practModule.create)
-    local Symbols: any = require(practModule.Symbols)
+    local create = (require :: any)(practModule.create)
+    local Symbols = (require :: any)(practModule.Symbols)
 
     describe('create', function(it)
         it('Should create a CreateInstance element with empty props', function(expect)

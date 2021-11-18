@@ -3,8 +3,8 @@
 local Types = require(script.Parent.Parent.Types)
 
 local spec: Types.Spec = function(practModule, describe)
-    local decorate: any = require(practModule.decorate)
-    local Symbols: any = require(practModule.Symbols)
+    local decorate = (require :: any)(practModule.decorate)
+    local Symbols = (require :: any)(practModule.Symbols)
 
     describe('decorate', function(it)
         it('Should create a Decorate element with empty props', function(expect)

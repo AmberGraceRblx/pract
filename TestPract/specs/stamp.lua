@@ -3,8 +3,8 @@
 local Types = require(script.Parent.Parent.Types)
 
 local spec: Types.Spec = function(practModule, describe)
-    local stamp: any = require(practModule.stamp)
-    local Symbols: any = require(practModule.Symbols)
+    local stamp = (require :: any)(practModule.stamp)
+    local Symbols = (require :: any)(practModule.Symbols)
 
     describe('stamp', function(it)
         local TEMPLATE = Instance.new('Folder')
