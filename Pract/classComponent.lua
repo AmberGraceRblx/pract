@@ -91,7 +91,9 @@ local function classComponent(componentMethods: Types.ClassComponentMethods)
 				end,
 				init = function(props: Types.PropsArgument)
 					self.props = props
-					_init(self)
+					if _init then
+						_init(self)
+					end
 					self.state = getState()
 				end,
 				didMount = wrapOptionalLifecycleMethod 'didMount',
