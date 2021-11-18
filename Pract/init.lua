@@ -14,6 +14,7 @@ PractGlobalSystems.Run()
 -- Public types
 export type Tree = Types.PractTree
 export type Component = Types.Component
+export type ComponentTyped<PropsType> = Types.ComponentTyped<PropsType>
 export type Element = Types.Element
 export type PropsArgument = Types.PropsArgument
 export type ChildrenArgument = Types.ChildrenArgument
@@ -25,6 +26,10 @@ export type Lifecycle = Types.Lifecycle
 
 -- Base element functions
 Pract.create = require(script.create)
+Pract.createTyped = (Pract.create :: any) :: <PropsType>(
+	component: ComponentTyped<PropsType>,
+	props: PropsType
+) -> (Types.Element)
 Pract.index = require(script.index)
 Pract.stamp = require(script.stamp)
 Pract.decorate = require(script.decorate)

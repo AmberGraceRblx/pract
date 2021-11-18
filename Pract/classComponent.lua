@@ -3,6 +3,9 @@
 local Types = require(script.Parent.Types)
 local withDeferredState = require(script.Parent.withDeferredState)
 local withLifecycle = require(script.Parent.withLifecycle)
+local Symbols = require(script.Parent.Symbols)
+
+local Symbol_None = Symbols.None
 
 local INIT_EMPTY_STATE = {}
 table.freeze(INIT_EMPTY_STATE)
@@ -28,6 +31,9 @@ local function classComponent(componentMethods: Types.ClassComponentMethods)
 					if typeof(partialStateUpdate) == 'table' then
 						local stateChanged = false
 						for key, newValue in pairs(partialStateUpdate) do
+							if newValue == Symbol_None then
+								newValue = nil
+							end
 							if saveState[key] ~= newValue then
 								stateChanged = true
 								break
@@ -40,6 +46,9 @@ local function classComponent(componentMethods: Types.ClassComponentMethods)
 								newState[key] = value
 							end
 							for key, value in pairs(partialStateUpdate) do
+								if value == Symbol_None then
+									value = nil
+								end
 								newState[key] = value
 							end
 							table.freeze(newState)
@@ -91,7 +100,9 @@ local function classComponent(componentMethods: Types.ClassComponentMethods)
 				end,
 				init = function(props: Types.PropsArgument)
 					self.props = props
-					_init(self)
+					if _init then
+						_init(self)
+					end
 					self.state = getState()
 				end,
 				didMount = wrapOptionalLifecycleMethod 'didMount',
@@ -100,7 +111,7 @@ local function classComponent(componentMethods: Types.ClassComponentMethods)
 				shouldUpdate = function(newProps: Types.PropsArgument)
 					local newState = getState()
 					if _shouldUpdate then
-						if _shouldUpdate(newProps, newState) == false then
+						if _shouldUpdate(self, newProps, newState) == false then
 							self.state = getState()
 							self.props = newProps
 							return false
