@@ -4,10 +4,10 @@
 
 -- Util types
 export type ChildrenArgument = {[any]: Element | boolean | nil}
-export type PropsArgument = {[any]: any}
+export type PropsArgument = any -- {[any]: any}
 export type Symbol = {}
---export type StateUpdate<S, P> = {[any]: any} | (state: S, props: P) -> {[any]: any}
---export type SetStateCB<S, P> = (stateUpdate: StateUpdate<S, P>) -> ()
+--export type StateUpdate<P, S> = {[any]: any} | (state: P, props: P) -> {[any]: any}
+--export type SetStateCB<P, S> = (stateUpdate: StateUpdate<P, S>) -> ()
 
 
 
@@ -18,9 +18,12 @@ export type Element = {
 export type Component = (props: any) -> Element
 export type ComponentTyped<PropsType> = (props: PropsType) -> Element
 --export type ComponentTyped<P> = (props: P) -> any
-export type ClassState = {[string]: any}
-export type ClassStateUpdateThunk = (state: ClassState, props: PropsArgument) -> ClassState
-export type ClassStateUpdate = ClassState | ClassStateUpdateThunk
+export type ClassState = any
+export type PartialClassState = {[string]: any}
+export type ClassStateUpdateThunk = (state: ClassState, props: PropsArgument) -> PartialClassState
+export type ClassStateUpdateThunkTyped<P, S> = (state: P, props: P) -> S
+export type ClassStateUpdate = PartialClassState | ClassStateUpdateThunk
+export type ClassStateUpdateTyped<P, S> = S | ClassStateUpdateThunkTyped<P, S>
 export type ClassComponentSelf = {
 	[any]: any,
 	props: PropsArgument,
@@ -31,6 +34,17 @@ export type ClassComponentSelf = {
 	) -> (),
 	subscribeState: (self: ClassComponentSelf, listener: () -> ()) -> (() -> ()),
 	forceUpdate: (self: ClassComponentSelf) -> (),
+}
+export type ClassComponentSelfTyped<P, S> = {
+	[any]: (self: ClassComponentSelfTyped<P, S>, ...any) -> ...any,
+	props: P,
+	state: S,
+	setState: (
+		self: ClassComponentSelfTyped<P, S>,
+		partialStateUpdate: ClassStateUpdateTyped<P, S>
+	) -> (),
+	subscribeState: (self: ClassComponentSelfTyped<P, S>, listener: () -> ()) -> (() -> ()),
+	forceUpdate: (self: ClassComponentSelfTyped<P, S>) -> (),
 }
 export type ClassComponentMethods = {
 	[any]: any,
@@ -46,6 +60,20 @@ export type ClassComponentMethods = {
 	didUpdate: ((self: ClassComponentSelf) -> ())?,
 	willUnmount: ((self: ClassComponentSelf) -> ())?,
 }
+export type ClassComponentMethodsTyped<P, S> = {
+	[any]: any,
+	render: (self: ClassComponentSelfTyped<P, S>) -> Element,
+	init: ((self: ClassComponentSelfTyped<P, S>) -> ())?,
+	didMount: ((self: ClassComponentSelfTyped<P, S>) ->())?,
+	shouldUpdate: ((
+		self: ClassComponentSelfTyped<P, S>,
+		newProps: P,
+		newState: S
+	) -> boolean)?,
+	willUpdate: ((self: ClassComponentSelfTyped<P, S>, newProps: P, newState: S) -> ())?,
+	didUpdate: ((self: ClassComponentSelfTyped<P, S>) -> ())?,
+	willUnmount: ((self: ClassComponentSelfTyped<P, S>) -> ())?,
+}
 export type Lifecycle = {
 	render: Component,
 	init: ((props: any) -> ())?,
@@ -54,6 +82,15 @@ export type Lifecycle = {
 	willUpdate: ((props: any, oldProps: any) -> ())?,
 	didUpdate: ((props: any) -> ())?,
 	willUnmount: ((props: any) -> ())?,
+}
+export type LifecycleTyped<P> = {
+	render: Component,
+	init: ((props: P) -> ())?,
+	didMount: ((props: P) ->())?,
+	shouldUpdate: ((newProps: P, oldProps: P) -> boolean)?,
+	willUpdate: ((props: P, oldProps: P) -> ())?,
+	didUpdate: ((props: P) -> ())?,
+	willUnmount: ((props: P) -> ())?,
 }
 
 

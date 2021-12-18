@@ -19,8 +19,12 @@ export type Element = Types.Element
 export type PropsArgument = Types.PropsArgument
 export type ChildrenArgument = Types.ChildrenArgument
 export type ClassComponentMethods = Types.ClassComponentMethods
+-- export type ClassComponentMethodsTyped<P, S> = Types.ClassComponentMethodsTyped<P, S>
+export type ClassComponentSelf = Types.ClassComponentSelf
+-- export type ClassComponentSelfTyped<P, S> = Types.ClassComponentSelfTyped<P, S>
 export type ClassState = Types.ClassState
 export type Lifecycle = Types.Lifecycle
+-- export type LifecycleTyped<P> = Types.LifecycleTyped<P>
 
 -- Public library values
 
@@ -46,12 +50,18 @@ Pract.unmount = robloxReconciler.unmountVirtualTree
 -- Higher-order component wrapper functions
 
 Pract.withLifecycle = require(script.withLifecycle)
+-- Pract.withLifecycleTyped = (Pract.withLifecycle :: any) :: <P>(
+-- 	closureCreator: (forceUpdate: () -> ()) -> LifecycleTyped<P>
+-- ) -> ComponentTyped<P>
 Pract.withState = require(script.withState)
 Pract.withDeferredState = require(script.withDeferredState)
 Pract.withSignal = require(script.withSignal)
 Pract.withContextProvider = require(script.withContextProvider)
 Pract.withContextConsumer = require(script.withContextConsumer)
 Pract.classComponent = require(script.classComponent)
+-- Pract.classComponentTyped = (Pract.classComponent :: any) :: <P, S>(
+-- 	methods: ClassComponentMethodsTyped<P, S>
+-- ) -> ComponentTyped<P>
 
 -- Symbols:
 
