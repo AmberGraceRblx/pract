@@ -243,7 +243,4 @@ As long as your custom state system has a way to detect changes in state, you ca
 
 Try to avoid repeating yourself, and make your own helper higher-order functions or components to connect your third-party state with Pract. That way, using external state can be just as easy as using a pre-made utlilty with your Pract component!
 
-#### Up Next: ???
-
-You've reached the end of the Pract documentation.
-Much of this documentation is a first draft, and may be subject to change in the future. Collaborators would be appreciated in improving the documentation and functionality of the Pract library in general!
+#### Up Next: [Type Safety](./typesafety)

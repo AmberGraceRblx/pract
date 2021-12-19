@@ -97,6 +97,7 @@ Returns an element which instructs pract to mount multiple elements with the sam
 
 ## Pract.createTyped
 
+See: [Type Safety](../advanced/typesafety) for more details on using Pract's optional type features.
 
 ```lua
 Pract.createTyped<PropsType>(
