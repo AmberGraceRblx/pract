@@ -5,7 +5,7 @@
 -- https://ambers-careware.github.io/pract/
 
 local Pract = {}
-Pract._VERSION = '0.9.8'
+Pract._VERSION = '0.9.9'
 
 local Types = require(script.Types)
 local PractGlobalSystems = require(script.PractGlobalSystems)
