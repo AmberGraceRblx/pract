@@ -579,6 +579,14 @@ local function createReconciler(): Types.Reconciler
 	end
 	
 	local function getIndexedChildFromHost(hostContext: Types.HostContext): Instance?
+		local siblingClusterCache = hostContext.siblingClusterCache
+		if siblingClusterCache then
+			local lastInstance = siblingClusterCache.lastInstance
+			if lastInstance then
+				return lastInstance
+			end
+		end
+
 		local instance
 		
 		local parent = hostContext.instance
@@ -598,13 +606,15 @@ local function createReconciler(): Types.Reconciler
 	local function createHost(
 		instance: Instance?,
 		key: string?,
-		providers: {Types.ContextProvider}
+		providers: {Types.ContextProvider},
+		siblingClusterCache: Types.SiblingClusterCache?
 	): Types.HostContext
 		return {
 			instance = instance,
 			childKey = key,
 			-- List (from root to last provider) of ancestor context providers in this tree
-			providers = providers
+			providers = providers,
+			siblingClusterCache = siblingClusterCache,
 		}
 	end
 	local function createVirtualNode(
@@ -642,14 +652,28 @@ local function createReconciler(): Types.Reconciler
 			virtualNode._currentElement = onChildElement
 			virtualNode._resolved = false
 			
+			local siblingClusterCache = hostContext.siblingClusterCache
 			task.defer(function()
 				local triesAttempted = 0
 				repeat
 					triesAttempted = triesAttempted + 1
-					local child = hostInstance:WaitForChild(
-						hostKey,
-						PractGlobalSystems.ON_CHILD_TIMEOUT_INTERVAL
-					)
+					
+					local child: any
+					if siblingClusterCache then
+						local lastInstance = siblingClusterCache.lastInstance
+						if lastInstance then
+							child = lastInstance
+							break
+						end
+					end
+
+					if not child then
+						child = hostInstance:WaitForChild(
+							hostKey,
+							PractGlobalSystems.ON_CHILD_TIMEOUT_INTERVAL
+						)
+					end
+			
 					if virtualNode._wasUnmounted then return end
 					if child then
 						virtualNode._resolved = true
@@ -724,6 +748,9 @@ local function createReconciler(): Types.Reconciler
 		end
 		
 		updateByElementKind[ElementKinds.Stamp] = function(virtualNode, newElement)
+			if virtualNode._currentElement.template ~= newElement.template then
+				return replaceVirtualNode(virtualNode, newElement)
+			end
 			local success, err: string? = pcall(
 				updateDecorationProps,
 				virtualNode,
@@ -995,7 +1022,8 @@ local function createReconciler(): Types.Reconciler
 					createHost(
 						hostParent,
 						tostring(childKey),
-						virtualNode._hostContext.providers
+						virtualNode._hostContext.providers,
+						nil
 					)
 				)
 				
@@ -1058,6 +1086,11 @@ local function createReconciler(): Types.Reconciler
 			
 			instance.Parent = hostContext.instance
 			virtualNode._instance = instance
+
+			local siblingClusterCache = hostContext.siblingClusterCache
+			if siblingClusterCache then
+				siblingClusterCache.lastInstance = instance
+			end
 		end
 		mountByElementKind[ElementKinds.CreateInstance] = function(virtualNode)
 			local element = virtualNode._currentElement
@@ -1081,6 +1114,11 @@ local function createReconciler(): Types.Reconciler
 			
 			instance.Parent = hostContext.instance
 			virtualNode._instance = instance
+			
+			local siblingClusterCache = hostContext.siblingClusterCache
+			if siblingClusterCache then
+				siblingClusterCache.lastInstance = instance
+			end
 		end
 		mountByElementKind[ElementKinds.Index] = function(virtualNode)
 			local element = virtualNode._currentElement
@@ -1346,7 +1384,8 @@ local function createReconciler(): Types.Reconciler
 				createHost(
 					hostContext.instance,
 					hostContext.childKey,
-					nextProviderChain
+					nextProviderChain,
+					hostContext.siblingClusterCache
 				)
 			)
 			virtualNode._renderClosure = closure
@@ -1374,12 +1413,23 @@ local function createReconciler(): Types.Reconciler
 		end
 		
 		mountByElementKind[ElementKinds.SiblingCluster] = function(virtualNode)
+			local providedHost = virtualNode._hostContext
+			local siblingHost = createHost(
+				providedHost.instance,
+				providedHost.childKey,
+				providedHost.providers,
+				{
+					lastInstance = nil,
+				}
+			)
+			siblingHost.isSiblingCluster = true
+			virtualNode._hostContext = siblingHost
 			local elements = virtualNode._currentElement.elements
 			local siblings = table.create(#elements)
 			for i = 1, #elements do
 				table.insert(siblings, mountVirtualNode(
 					elements[i],
-					virtualNode._hostContext
+					siblingHost
 				))
 			end
 			
@@ -1520,7 +1570,8 @@ local function createReconciler(): Types.Reconciler
 			createHost(
 				hostInstance,
 				hostChildKey,
-				{}
+				{},
+				nil
 			)
 		)
 		

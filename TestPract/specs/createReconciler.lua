@@ -31,7 +31,7 @@ local spec: Types.Spec = function(practModule, describe)
     describe('createHost', function(it)
         it('creates a host with no instance, no key, and empty providers', function(expect)
             local defaultProviders = {}
-            defaultHost = reconciler.createHost(nil, nil, defaultProviders)
+            defaultHost = reconciler.createHost(nil, nil, defaultProviders, nil)
             expect.equal(nil, defaultHost.instance)
             expect.equal(nil, defaultHost.childKey)
             expect.equal(defaultProviders, defaultHost.providers)
