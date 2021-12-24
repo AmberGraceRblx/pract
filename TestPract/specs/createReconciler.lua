@@ -64,6 +64,106 @@ local spec: Types.Spec = function(practModule, describe)
             end
         end)
     end)
+
+    describe("ElementKinds.SiblingCluster", function(it)
+        it("errors if sibling decorate element is mounted with no host instance", function(expect)
+            local tree
+            expect.errors(function()
+                tree = reconciler.mountVirtualTree(
+                    Pract.combine(
+                        Pract.decorate({})
+                    )
+                )
+            end)
+            if tree then
+                reconciler.unmountVirtualTree(tree)
+            end
+        end)
+        it("propogages stamped element instance to sibling decorate element", function(expect)
+            local template = Instance.new("Folder")
+            template:SetAttribute("IsOurTemplate", true)
+
+            local tree = reconciler.mountVirtualTree(
+                Pract.combine(
+                    Pract.stamp(template),
+                    Pract.decorate({
+                        [Pract.Attributes] = {
+                            WasDecorated = true,
+                        }
+                    })
+                )
+            )
+            
+            local rootNode: any = tree._rootNode
+            expect.truthy(rootNode)
+
+            local siblingClusterCache = rootNode._hostContext.siblingClusterCache
+            expect.truthy(siblingClusterCache)
+
+            local stampedInstance = siblingClusterCache.lastProvidedInstance
+            expect.truthy(stampedInstance)
+
+            expect.equal(true, stampedInstance:GetAttribute("IsOurTemplate"))
+            expect.equal(true, stampedInstance:GetAttribute("WasDecorated"))
+            
+            reconciler.unmountVirtualTree(tree)
+        end)
+        it("Re-mounts elements dependent on instances created by prior siblings", function(expect)
+            local template1 = Instance.new("Folder")
+            template1:SetAttribute("IsTemplate1", true)
+            local template2 = Instance.new("Folder")
+            template2:SetAttribute("IsTemplate2", true)
+
+            local tree = reconciler.mountVirtualTree(
+                Pract.combine(
+                    Pract.stamp(template1, {Name = "FromTemplate1"}),
+                    Pract.decorate({
+                        [Pract.Attributes] = {
+                            WasDecorated = true,
+                        }
+                    })
+                )
+            )
+            
+            local rootNode: any = tree._rootNode
+            expect.truthy(rootNode)
+
+            local siblingClusterCache = rootNode._hostContext.siblingClusterCache
+            expect.truthy(siblingClusterCache)
+
+            local stampedInstance1 = siblingClusterCache.lastProvidedInstance
+            expect.truthy(stampedInstance1)
+
+            expect.equal(true, stampedInstance1:GetAttribute("IsTemplate1"))
+            expect.equal(nil, stampedInstance1:GetAttribute("IsTemplate2"))
+            expect.equal(true, stampedInstance1:GetAttribute("WasDecorated"))
+
+            reconciler.updateVirtualTree(
+                tree,
+                Pract.combine(
+                    Pract.stamp(template2, {Name = "FromTemplate2"}),
+                    Pract.decorate({
+                        [Pract.Attributes] = {
+                            WasDecorated = true,
+                        }
+                    })
+                )
+            )
+            
+            local stampedInstance2 = siblingClusterCache.lastProvidedInstance
+            expect.truthy(stampedInstance2)
+
+            expect.equal(nil, stampedInstance2:GetAttribute("IsTemplate1"))
+            expect.equal(true, stampedInstance2:GetAttribute("IsTemplate2"))
+            expect.equal(true, stampedInstance2:GetAttribute("WasDecorated"))
+
+            expect.equal(true, stampedInstance1:GetAttribute("IsTemplate1"))
+            expect.equal(nil, stampedInstance1:GetAttribute("IsTemplate2"))
+            expect.equal(nil, stampedInstance1:GetAttribute("WasDecorated"))
+            
+            reconciler.unmountVirtualTree(tree)
+        end)
+    end)
 end
 
 return spec
