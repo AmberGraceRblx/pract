@@ -660,21 +660,22 @@ local function createReconciler(): Types.Reconciler
 				repeat
 					triesAttempted = triesAttempted + 1
 					
-					local thisThread = coroutine.running()
+					local threadResumeEvent = Instance.new("BindableEvent")
 					local childAddedConn = hostInstance.ChildAdded:Connect(function(child: Instance)
 						if child.Name == hostKey then
-							coroutine.resume(thisThread, child)
+							threadResumeEvent:Fire(child)
 						end
 					end)
 					local didResume = false
 					task.delay(PractGlobalSystems.ON_CHILD_TIMEOUT_INTERVAL, function()
 						if not didResume then
-							coroutine.resume(thisThread, nil)
+							threadResumeEvent:Fire(nil)
 						end
 					end)
-					local child = coroutine.yield(thisThread)
+					local child = threadResumeEvent:Wait()
 					didResume = true
 					childAddedConn:Disconnect()
+					threadResumeEvent:Destroy()
 			
 					if virtualNode._wasUnmounted then return end
 					if child then
@@ -901,7 +902,13 @@ local function createReconciler(): Types.Reconciler
 			local siblingClusterCache = siblingHost.siblingClusterCache :: Types.SiblingClusterCache
 			local siblings = virtualNode._siblings
 			local elements = newElement.elements
-			local nextSiblings = table.create(#elements)
+			local nonNilElements = table.create(#elements)
+			for i = 1, #elements do
+				if elements[i] then
+					table.insert(nonNilElements, elements[i])
+				end
+			end
+			local nextSiblings = table.create(#nonNilElements)
 
 			local idxToConsumedInstanceHost = siblingClusterCache.idxToConsumedInstanceHost
 			local providedInstanceHostSet = siblingClusterCache.providedInstanceHostSet
@@ -911,24 +918,33 @@ local function createReconciler(): Types.Reconciler
 				-- previous sibling's created instance!
 				local consumedInstance = idxToConsumedInstanceHost[i]
 				if consumedInstance and not providedInstanceHostSet[consumedInstance] then
-					table.insert(nextSiblings, replaceVirtualNode(
+					local newNode = replaceVirtualNode(
 						siblings[i],
-						elements[i]
-					))
-				else
-					table.insert(nextSiblings, updateVirtualNode(
-						siblings[i],
-						elements[i])
+						nonNilElements[i]
 					)
+					if newNode then
+						table.insert(nextSiblings, newNode)
+					end
+				else
+					local node = updateVirtualNode(
+						siblings[i],
+						nonNilElements[i]
+					)
+					if node then
+						table.insert(nextSiblings, node)
+					end
 				end
 			end
 			
-			for i = #siblings + 1, #elements do
+			for i = #siblings + 1, #nonNilElements do
 				siblingClusterCache.currentSiblingIdx = i
-				table.insert(nextSiblings, mountVirtualNode(
-					elements[i],
+				local node = mountVirtualNode(
+					nonNilElements[i],
 					siblingHost
-				))
+				)
+				if node then
+					table.insert(nextSiblings, node)
+				end
 			end
 			
 			virtualNode._siblings = nextSiblings
@@ -1463,10 +1479,13 @@ local function createReconciler(): Types.Reconciler
 
 			for i = 1, #elements do
 				siblingClusterCache.currentSiblingIdx = i
-				table.insert(siblings, mountVirtualNode(
+				local node = mountVirtualNode(
 					elements[i],
 					siblingHost
-				))
+				)
+				if node then
+					table.insert(siblings, node)
+				end
 			end
 			
 			virtualNode._siblings = siblings
