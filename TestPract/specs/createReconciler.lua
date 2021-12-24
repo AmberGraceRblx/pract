@@ -163,6 +163,51 @@ local spec: Types.Spec = function(practModule, describe)
             
             reconciler.unmountVirtualTree(tree)
         end)
+        it("Waits for child for decorate elements occurring earlier in cluster", function(expect)
+            local template = Instance.new("Folder")
+            template:SetAttribute("IsTemplate", true)
+            local tree
+            expect.errors(function()
+                tree = reconciler.mountVirtualTree(
+                    Pract.combine(
+                        Pract.decorate({
+                            [Pract.Attributes] = {
+                                WasDecorated = true,
+                            }
+                        }),
+                        Pract.stamp(template)
+                    )
+                )
+            end)
+            if tree then
+                reconciler.unmountVirtualTree(tree)
+            end
+
+            local parentFolder = Instance.new("Folder")
+            tree = reconciler.mountVirtualTree(
+                Pract.combine(
+                    Pract.decorate({
+                        [Pract.Attributes] = {
+                            WasDecorated = true,
+                        }
+                    }),
+                    Pract.stamp(template)
+                ),
+                parentFolder,
+                "ChildName"
+            )
+            local rootNode: any = tree._rootNode
+            expect.truthy(rootNode)
+
+            local mountedDecorateNode = rootNode._siblings[1]
+            expect.truthy(mountedDecorateNode)
+
+            local instance = parentFolder:FindFirstChild("ChildName")
+            expect.truthy(instance)
+            
+            expect.equal(true, instance:GetAttribute("IsTemplate"))
+            expect.equal(true, instance:GetAttribute("WasDecorated"))
+        end)
     end)
 end
 

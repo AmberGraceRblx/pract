@@ -655,30 +655,26 @@ local function createReconciler(): Types.Reconciler
 			virtualNode._currentElement = onChildElement
 			virtualNode._resolved = false
 			
-			local siblingClusterCache = hostContext.siblingClusterCache
-			task.defer(function()
+			task.spawn(function()
 				local triesAttempted = 0
 				repeat
 					triesAttempted = triesAttempted + 1
 					
-					local child: any
-					if siblingClusterCache then
-						local lastInstance = siblingClusterCache.lastProvidedInstance
-						if lastInstance then
-							siblingClusterCache.idxToConsumedInstanceHost[
-								siblingClusterCache.currentSiblingIdx
-							] = lastInstance
-							child = lastInstance
-							break
+					local thisThread = coroutine.running()
+					local childAddedConn = hostInstance.ChildAdded:Connect(function(child: Instance)
+						if child.Name == hostKey then
+							coroutine.resume(thisThread, child)
 						end
-					end
-
-					if not child then
-						child = hostInstance:WaitForChild(
-							hostKey,
-							PractGlobalSystems.ON_CHILD_TIMEOUT_INTERVAL
-						)
-					end
+					end)
+					local didResume = false
+					task.delay(PractGlobalSystems.ON_CHILD_TIMEOUT_INTERVAL, function()
+						if not didResume then
+							coroutine.resume(thisThread, nil)
+						end
+					end)
+					local child = coroutine.yield(thisThread)
+					didResume = true
+					childAddedConn:Disconnect()
 			
 					if virtualNode._wasUnmounted then return end
 					if child then
