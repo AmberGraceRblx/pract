@@ -116,7 +116,7 @@ local spec: Types.Spec = function(practModule, describe)
 
             local tree = reconciler.mountVirtualTree(
                 Pract.combine(
-                    Pract.stamp(template1, {Name = "FromTemplate1"}),
+                    Pract.stamp(template1),
                     Pract.decorate({
                         [Pract.Attributes] = {
                             WasDecorated = true,
@@ -141,7 +141,7 @@ local spec: Types.Spec = function(practModule, describe)
             reconciler.updateVirtualTree(
                 tree,
                 Pract.combine(
-                    Pract.stamp(template2, {Name = "FromTemplate2"}),
+                    Pract.stamp(template2),
                     Pract.decorate({
                         [Pract.Attributes] = {
                             WasDecorated = true,
