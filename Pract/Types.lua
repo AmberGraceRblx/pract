@@ -101,6 +101,13 @@ export type ContextProvider = {
 	provide: (name: string, object: any?) -> (),
 	unprovide: (name: string) -> (),
 }
+export type SiblingClusterCache = {
+	currentSiblingIdx: number,
+	providedInstanceHostSet: {[Instance]: boolean},
+	lastProvidedInstance: Instance?,
+	idxToProvidedInstanceHost: {[number]: Instance},
+	idxToConsumedInstanceHost: {[number]: Instance},
+}
 export type HostContext = {	-- Immutable type used as an object reference passed down in trees; the
 							-- purpose of grouping these together is because typically components
 							-- share the same host and context information except in special cases.
@@ -108,6 +115,7 @@ export type HostContext = {	-- Immutable type used as an object reference passed
 	instance: Instance?,
 	childKey: string?,
 	providers: {ContextProvider},
+	siblingClusterCache: SiblingClusterCache?,
 }
 export type VirtualNode = {
 	[any]: any,
@@ -132,7 +140,8 @@ export type Reconciler = {
 	createHost: (
 		instance: Instance?,
 		key: string?,
-		providers: {ContextProvider}
+		providers: {ContextProvider},
+		siblingClusterCache: SiblingClusterCache?
 	) -> HostContext
 }
 

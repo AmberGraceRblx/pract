@@ -579,6 +579,17 @@ local function createReconciler(): Types.Reconciler
 	end
 	
 	local function getIndexedChildFromHost(hostContext: Types.HostContext): Instance?
+		local siblingClusterCache = hostContext.siblingClusterCache
+		if siblingClusterCache then
+			local lastInstance = siblingClusterCache.lastProvidedInstance
+			if lastInstance then
+				siblingClusterCache.idxToConsumedInstanceHost[
+					siblingClusterCache.currentSiblingIdx
+				] = lastInstance
+				return lastInstance
+			end
+		end
+
 		local instance
 		
 		local parent = hostContext.instance
@@ -598,13 +609,15 @@ local function createReconciler(): Types.Reconciler
 	local function createHost(
 		instance: Instance?,
 		key: string?,
-		providers: {Types.ContextProvider}
+		providers: {Types.ContextProvider},
+		siblingClusterCache: Types.SiblingClusterCache?
 	): Types.HostContext
 		return {
 			instance = instance,
 			childKey = key,
 			-- List (from root to last provider) of ancestor context providers in this tree
-			providers = providers
+			providers = providers,
+			siblingClusterCache = siblingClusterCache,
 		}
 	end
 	local function createVirtualNode(
@@ -642,14 +655,31 @@ local function createReconciler(): Types.Reconciler
 			virtualNode._currentElement = onChildElement
 			virtualNode._resolved = false
 			
+			local siblingClusterCache = hostContext.siblingClusterCache
 			task.defer(function()
 				local triesAttempted = 0
 				repeat
 					triesAttempted = triesAttempted + 1
-					local child = hostInstance:WaitForChild(
-						hostKey,
-						PractGlobalSystems.ON_CHILD_TIMEOUT_INTERVAL
-					)
+					
+					local child: any
+					if siblingClusterCache then
+						local lastInstance = siblingClusterCache.lastProvidedInstance
+						if lastInstance then
+							siblingClusterCache.idxToConsumedInstanceHost[
+								siblingClusterCache.currentSiblingIdx
+							] = lastInstance
+							child = lastInstance
+							break
+						end
+					end
+
+					if not child then
+						child = hostInstance:WaitForChild(
+							hostKey,
+							PractGlobalSystems.ON_CHILD_TIMEOUT_INTERVAL
+						)
+					end
+			
 					if virtualNode._wasUnmounted then return end
 					if child then
 						virtualNode._resolved = true
@@ -724,6 +754,9 @@ local function createReconciler(): Types.Reconciler
 		end
 		
 		updateByElementKind[ElementKinds.Stamp] = function(virtualNode, newElement)
+			if virtualNode._currentElement.template ~= newElement.template then
+				return replaceVirtualNode(virtualNode, newElement)
+			end
 			local success, err: string? = pcall(
 				updateDecorationProps,
 				virtualNode,
@@ -868,17 +901,37 @@ local function createReconciler(): Types.Reconciler
 		end
 		
 		updateByElementKind[ElementKinds.SiblingCluster] = function(virtualNode, newElement)
+			local siblingHost = virtualNode._hostContext
+			local siblingClusterCache = siblingHost.siblingClusterCache :: Types.SiblingClusterCache
 			local siblings = virtualNode._siblings
 			local elements = newElement.elements
 			local nextSiblings = table.create(#elements)
+
+			local idxToConsumedInstanceHost = siblingClusterCache.idxToConsumedInstanceHost
+			local providedInstanceHostSet = siblingClusterCache.providedInstanceHostSet
 			for i = 1, #siblings do
-				table.insert(nextSiblings, updateVirtualNode(siblings[i], elements[i]))
+				siblingClusterCache.currentSiblingIdx = i
+				-- We should re-mount a component later in a sibling cluster iff it relies on a
+				-- previous sibling's created instance!
+				local consumedInstance = idxToConsumedInstanceHost[i]
+				if consumedInstance and not providedInstanceHostSet[consumedInstance] then
+					table.insert(nextSiblings, replaceVirtualNode(
+						siblings[i],
+						elements[i]
+					))
+				else
+					table.insert(nextSiblings, updateVirtualNode(
+						siblings[i],
+						elements[i])
+					)
+				end
 			end
 			
 			for i = #siblings + 1, #elements do
+				siblingClusterCache.currentSiblingIdx = i
 				table.insert(nextSiblings, mountVirtualNode(
 					elements[i],
-					virtualNode._hostContext
+					siblingHost
 				))
 			end
 			
@@ -995,7 +1048,8 @@ local function createReconciler(): Types.Reconciler
 					createHost(
 						hostParent,
 						tostring(childKey),
-						virtualNode._hostContext.providers
+						virtualNode._hostContext.providers,
+						nil
 					)
 				)
 				
@@ -1058,6 +1112,15 @@ local function createReconciler(): Types.Reconciler
 			
 			instance.Parent = hostContext.instance
 			virtualNode._instance = instance
+
+			local siblingClusterCache = hostContext.siblingClusterCache
+			if siblingClusterCache then
+				siblingClusterCache.providedInstanceHostSet[instance] = true
+				siblingClusterCache.idxToProvidedInstanceHost[
+					siblingClusterCache.currentSiblingIdx
+				] = instance
+				siblingClusterCache.lastProvidedInstance = instance
+			end
 		end
 		mountByElementKind[ElementKinds.CreateInstance] = function(virtualNode)
 			local element = virtualNode._currentElement
@@ -1081,6 +1144,15 @@ local function createReconciler(): Types.Reconciler
 			
 			instance.Parent = hostContext.instance
 			virtualNode._instance = instance
+
+			local siblingClusterCache = hostContext.siblingClusterCache
+			if siblingClusterCache then
+				siblingClusterCache.providedInstanceHostSet[instance] = true
+				siblingClusterCache.idxToProvidedInstanceHost[
+					siblingClusterCache.currentSiblingIdx
+				] = instance
+				siblingClusterCache.lastProvidedInstance = instance
+			end
 		end
 		mountByElementKind[ElementKinds.Index] = function(virtualNode)
 			local element = virtualNode._currentElement
@@ -1346,7 +1418,8 @@ local function createReconciler(): Types.Reconciler
 				createHost(
 					hostContext.instance,
 					hostContext.childKey,
-					nextProviderChain
+					nextProviderChain,
+					hostContext.siblingClusterCache
 				)
 			)
 			virtualNode._renderClosure = closure
@@ -1374,12 +1447,29 @@ local function createReconciler(): Types.Reconciler
 		end
 		
 		mountByElementKind[ElementKinds.SiblingCluster] = function(virtualNode)
+			local providedHost = virtualNode._hostContext
+			local siblingClusterCache = {
+				currentSiblingIdx = 1,
+				providedInstanceHostSet = {},
+				idxToProvidedInstanceHost = {},
+				idxToConsumedInstanceHost = {},
+				lastProvidedInstance = nil,
+			}
+			local siblingHost = createHost(
+				providedHost.instance,
+				providedHost.childKey,
+				providedHost.providers,
+				siblingClusterCache
+			)
+			virtualNode._hostContext = siblingHost
 			local elements = virtualNode._currentElement.elements
 			local siblings = table.create(#elements)
+
 			for i = 1, #elements do
+				siblingClusterCache.currentSiblingIdx = i
 				table.insert(siblings, mountVirtualNode(
 					elements[i],
-					virtualNode._hostContext
+					siblingHost
 				))
 			end
 			
@@ -1416,6 +1506,66 @@ local function createReconciler(): Types.Reconciler
 	end
 	
 	do
+		--[[
+			This utility should thoroughly clear cached values within a sibling cluster, if one
+			exists in the host context.
+
+			The issue with behavior consistency in sibling clusters is in situations like the
+			following example:
+
+				1. Mount a pract tree with a Pract.combine element, containing a Pract.stamp and
+				Pract.decorate component.
+
+					When mounted, the stamp element will stamp a template instance, and via the
+					sibling cluster cache, the decorate element will decorate the previously stamped
+					instance in this cluster.
+				
+				2. Update the pract tree with a similar Pract.combine element—the only difference
+				being that the stamp element has changed its template!
+
+					When updated, the first stamp element in this sibling cluster must be replaced--
+					that is, it should be unmounted then mounted again with the new template.
+
+					The issue here is that the next Pract.decorate element in this cluster DEPENDS
+					on the host created via the previous stamp element! This means it must be
+					replaced (unmounted then mounted again) as well! This is handled in the sibling
+					cluster update code.
+			
+			The current solution to this issue uses a cache within the host context itself; this
+			implementation is a little obscure and prone to memory leaks if it isn't designed with
+			airtight code. In addition, adding element types to Pract would require taking sibling
+			cluster behavior in the future. Unit tests can alleviate some of these issues, but
+			the combinatorial possibilities/proliferation of element types could make this hard to
+			thoroughly unit test with newly implemented element types. In addition, the sibling
+			cluster needs to propogate into certain nested hosts or elements using the same host.
+		]]
+		local function unmountSiblingClusterHost(
+			hostContext: Types.HostContext,
+			instance: Instance
+		)
+			local siblingClusterCache = hostContext.siblingClusterCache
+			if siblingClusterCache then
+				local currentSiblingIdx = siblingClusterCache.currentSiblingIdx
+				local idxToProvidedInstanceHost = siblingClusterCache.idxToProvidedInstanceHost
+				local idxToConsumedInstanceHost = siblingClusterCache.idxToConsumedInstanceHost
+				local providedInstanceHostSet = siblingClusterCache.providedInstanceHostSet
+				providedInstanceHostSet[instance] = nil
+				idxToProvidedInstanceHost[currentSiblingIdx] = nil
+				idxToConsumedInstanceHost[currentSiblingIdx] = nil
+				if siblingClusterCache.lastProvidedInstance == instance then
+					local maxIdx, maxInst = next(idxToProvidedInstanceHost)
+					for idx, inst in pairs(idxToProvidedInstanceHost) do
+						if idx > maxIdx then
+							maxIdx = idx
+							maxInst = inst
+						end
+					end
+
+					siblingClusterCache.lastProvidedInstance = maxInst
+				end
+			end
+		end
+
 		local unmountByElementKind = {} :: {
 			[Types.Symbol]: (virtualNode: Types.VirtualNode) -> ()
 		}
@@ -1428,12 +1578,16 @@ local function createReconciler(): Types.Reconciler
 		unmountByElementKind[ElementKinds.CreateInstance] = function(virtualNode)
 			unmountDecorationProps(virtualNode, true)
 			unmountChildren(virtualNode)
-			virtualNode._instance:Destroy()
+			local instance = virtualNode._instance
+			unmountSiblingClusterHost(virtualNode._hostContext, instance)
+			instance:Destroy()
 		end
 		unmountByElementKind[ElementKinds.Stamp] = function(virtualNode)
 			unmountDecorationProps(virtualNode, true)
 			unmountChildren(virtualNode)
-			virtualNode._instance:Destroy()
+			local instance = virtualNode._instance
+			unmountSiblingClusterHost(virtualNode._hostContext, instance)
+			instance:Destroy()
 		end
 		unmountByElementKind[ElementKinds.Portal] = function(virtualNode)
 			unmountChildren(virtualNode)
@@ -1469,8 +1623,11 @@ local function createReconciler(): Types.Reconciler
 			unmountVirtualNode(virtualNode._child)
 		end
 		unmountByElementKind[ElementKinds.SiblingCluster] = function(virtualNode)
+			local siblingHost = virtualNode._hostContext
+			local siblingClusterCache = siblingHost.siblingClusterCache :: Types.SiblingClusterCache
 			local siblings = virtualNode._siblings
 			for i = 1, #siblings do
+				siblingClusterCache.currentSiblingIdx = i
 				unmountVirtualNode(siblings[i])
 			end
 		end
@@ -1520,7 +1677,8 @@ local function createReconciler(): Types.Reconciler
 			createHost(
 				hostInstance,
 				hostChildKey,
-				{}
+				{},
+				nil
 			)
 		)
 		
