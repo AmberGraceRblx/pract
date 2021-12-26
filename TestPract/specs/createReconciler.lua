@@ -97,7 +97,7 @@ local spec: Types.Spec = function(practModule, describe)
             local rootNode: any = tree._rootNode
             expect.truthy(rootNode)
 
-            local siblingClusterCache = rootNode._hostContext.siblingClusterCache
+            local siblingClusterCache = rootNode._siblingHost.siblingClusterCache
             expect.truthy(siblingClusterCache)
 
             local stampedInstance = siblingClusterCache.lastProvidedInstance
@@ -128,7 +128,7 @@ local spec: Types.Spec = function(practModule, describe)
             local rootNode: any = tree._rootNode
             expect.truthy(rootNode)
 
-            local siblingClusterCache = rootNode._hostContext.siblingClusterCache
+            local siblingClusterCache = rootNode._siblingHost.siblingClusterCache
             expect.truthy(siblingClusterCache)
 
             local stampedInstance1 = siblingClusterCache.lastProvidedInstance
@@ -196,17 +196,105 @@ local spec: Types.Spec = function(practModule, describe)
                 parentFolder,
                 "ChildName"
             )
-            local rootNode: any = tree._rootNode
-            expect.truthy(rootNode)
-
-            local mountedDecorateNode = rootNode._siblings[1]
-            expect.truthy(mountedDecorateNode)
 
             local instance = parentFolder:FindFirstChild("ChildName")
             expect.truthy(instance)
             
             expect.equal(true, instance:GetAttribute("IsTemplate"))
             expect.equal(true, instance:GetAttribute("WasDecorated"))
+        end)
+        it("Should unmount/remount components based on position, and in the correct order.", function(expect)
+            local template = Instance.new("Folder")
+            template:SetAttribute("IsTemplate", true)
+
+            local mountCounts = {0, 0, 0, 0}
+            local unmountCounts = {0, 0, 0 ,0}
+
+            local component1 = Pract.withLifecycle(function()
+                return {
+                    didMount = function()
+                        mountCounts[1] = mountCounts[1] + 1
+                    end,
+                    willUnmount = function()
+                        unmountCounts[1] = unmountCounts[1] + 1
+                    end,
+                    render = function(props)
+                        return Pract.stamp(template)
+                    end
+                }
+            end)
+            local function makeDecoratorComponent(index: number)
+                return Pract.withLifecycle(function()
+                    return {
+                        didMount = function()
+                            mountCounts[index] = mountCounts[index] + 1
+                        end,
+                        willUnmount = function()
+                            unmountCounts[index] = unmountCounts[index] + 1
+                        end,
+                        render = function(props)
+                            return Pract.decorate({
+                                [Pract.Attributes] = {["Element" .. tostring(index)] = true}
+                            })
+                        end
+                    }
+                end)
+            end
+            local component2 = makeDecoratorComponent(2)
+            local component3 = makeDecoratorComponent(3)
+            local component4 = makeDecoratorComponent(4)
+
+            local function render(hasElement2: boolean)
+                local elements = {}
+
+                table.insert(elements, Pract.create(component1, {}))
+                if hasElement2 then
+                    table.insert(elements, Pract.create(component2, {}))
+                end
+                table.insert(elements, Pract.create(component3, {}))
+                table.insert(elements, Pract.create(component4, {}))
+
+                return Pract.combine(unpack(elements))
+            end
+            
+            local tree = reconciler.mountVirtualTree(render(true))
+            
+            local rootNode: any = tree._rootNode
+            expect.truthy(rootNode)
+
+            local mountedStampNode = rootNode._siblings[1]._child._child
+            expect.truthy(mountedStampNode)
+
+            local instance = mountedStampNode._instance
+            expect.truthy(instance)
+
+            expect.deep_equal({1, 1, 1, 1}, mountCounts)
+            expect.deep_equal({0, 0, 0, 0}, unmountCounts)
+            
+            expect.equal(true, instance:GetAttribute("IsTemplate"))
+            expect.equal(true, instance:GetAttribute("Element2"))
+            expect.equal(true, instance:GetAttribute("Element3"))
+            expect.equal(true, instance:GetAttribute("Element4"))
+            
+            reconciler.updateVirtualTree(tree, render(false))
+
+            expect.deep_equal({1, 1, 2, 2}, mountCounts)
+            expect.deep_equal({0, 1, 1, 1}, unmountCounts)
+            
+            expect.equal(true, instance:GetAttribute("IsTemplate"))
+            expect.equal(nil, instance:GetAttribute("Element2"))
+            expect.equal(true, instance:GetAttribute("Element3"))
+            expect.equal(true, instance:GetAttribute("Element4"))
+            
+            reconciler.updateVirtualTree(tree, render(true))
+
+            expect.deep_equal({1, 2, 3, 3}, mountCounts)
+            expect.deep_equal({0, 1, 2, 2}, unmountCounts)
+            
+            expect.equal(true, instance:GetAttribute("IsTemplate"))
+            expect.equal(true, instance:GetAttribute("Element2"))
+            expect.equal(true, instance:GetAttribute("Element3"))
+            expect.equal(true, instance:GetAttribute("Element4"))
         end)
     end)
 end
