@@ -91,7 +91,9 @@ Pract.combine(
 ): Pract.Element
 ```
 
-See: [State](../advanced/combine) for more detailed examples using `Pract.combine`
+> Warning: The order of elements in a `Pract.combine` tuple matters! See the [Combining Elements](../advanced/combine) for more information!
+
+See: [Combining Elements](../advanced/combine) for more detailed examples using `Pract.combine`
 
 Returns an element which instructs pract to mount multiple elements with the same host context. A good use case for this is having components dedicated to user input mounted together with components, which decorate the same instance. With `Pract.combine`, user input components can be re-used, while visual components can be more specialized.
 
