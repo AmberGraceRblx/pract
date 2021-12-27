@@ -95,67 +95,8 @@ local function createReconciler(): Types.Reconciler
 		}
 		specialApplyPropHandlers[Symbol_Children] = NOOP -- Handled in a separate pass
 		specialApplyPropHandlers[Symbols.OnUnmountWithHost] = NOOP -- Handled in unmount
-		specialApplyPropHandlers[Symbols.OnMountWithHost] = function(
-			virtualNode,
-			newValue,
-			oldValue,
-			eventMap,
-			instance
-		)
-			if not virtualNode._calledOnMountWithHost then
-				virtualNode._calledOnMountWithHost = true
-				if not newValue then return end
-				
-				task.defer(function()
-					if virtualNode._wasUnmounted then return end
-					
-					local currentElement = virtualNode._currentElement
-					local props = currentElement.props
-					local cb = props[Symbols.OnMountWithHost]
-					local instance = virtualNode._lastUpdateInstance
-					if cb and instance then
-						cb(instance, props, function(cleanupCallback: () -> ())
-							if virtualNode._wasUnmounted then
-								cleanupCallback()
-								return
-							end
-							
-							local specialPropCleanupCallbacks
-								= virtualNode._specialPropCleanupCallbacks
-							if not specialPropCleanupCallbacks then
-								specialPropCleanupCallbacks = {}
-								virtualNode._specialPropCleanupCallbacks
-									= specialPropCleanupCallbacks
-							end
-							table.insert(specialPropCleanupCallbacks, cleanupCallback)
-						end)
-					end
-				end)
-			end
-		end
-		specialApplyPropHandlers[Symbols.OnUpdateWithHost] = function(
-			virtualNode,
-			newValue,
-			oldValue,
-			eventMap,
-			instance
-		)
-			if not newValue then return end
-			if not virtualNode._collateDeferredUpdateCallback then
-				virtualNode._collateDeferredUpdateCallback = true
-				task.defer(function()
-					virtualNode._collateDeferredUpdateCallback = nil
-					if virtualNode._wasUnmounted then return end
-					
-					local props = virtualNode._currentElement.props
-					local cb = props[Symbols.OnUpdateWithHost]
-					local instance = virtualNode._lastUpdateInstance
-					if cb and instance then
-						cb(instance, props)
-					end
-				end)
-			end
-		end
+		specialApplyPropHandlers[Symbols.OnMountWithHost] = NOOP -- Handled in mount
+		specialApplyPropHandlers[Symbols.OnUpdateWithHost] = NOOP -- Handled in update
 		
 		specialApplyPropHandlers[Symbols.Attributes] = function(
 			virtualNode,
@@ -491,6 +432,15 @@ local function createReconciler(): Types.Reconciler
 		
 		virtualNode._deferDecorationEvents = false
 	end
+	local function updateLifecycleProps(
+		newProps: Types.PropsArgument,
+		instance: Instance
+	)
+		local onUpdateCB = newProps[Symbols.OnUpdateWithHost]
+		if onUpdateCB then
+			task.spawn(onUpdateCB, instance, newProps)
+		end
+	end
 	local function mountDecorationProps(
 		virtualNode: Types.VirtualNode,
 		props: Types.PropsArgument,
@@ -509,6 +459,36 @@ local function createReconciler(): Types.Reconciler
 		end
 		
 		virtualNode._deferDecorationEvents = false
+	end
+
+	local function mountLifecycleProps(
+		virtualNode: Types.VirtualNode,
+		props: Types.PropsArgument,
+		instance: Instance
+	)
+		local onMountCB = props[Symbols.OnMountWithHost]
+		if onMountCB then
+			task.spawn(
+				onMountCB,
+				instance,
+				props,
+				function(cleanupCallback: () -> ())
+					if virtualNode._wasUnmounted then
+						cleanupCallback()
+						return
+					end
+					
+					local specialPropCleanupCallbacks
+						= virtualNode._specialPropCleanupCallbacks
+					if not specialPropCleanupCallbacks then
+						specialPropCleanupCallbacks = {}
+						virtualNode._specialPropCleanupCallbacks
+							= specialPropCleanupCallbacks
+					end
+					table.insert(specialPropCleanupCallbacks, cleanupCallback)
+				end
+			)
+		end
 	end
 	
 	local function unmountDecorationProps(
@@ -540,15 +520,6 @@ local function createReconciler(): Types.Reconciler
 			end
 		end
 		
-		local toCallWithHostInstance = {}
-		local specialPropCleanupCallbacks = virtualNode._specialPropCleanupCallbacks
-		if specialPropCleanupCallbacks then
-			virtualNode._specialPropCleanupCallbacks = nil
-			for i = 1, #specialPropCleanupCallbacks do
-				table.insert(toCallWithHostInstance, specialPropCleanupCallbacks[i])
-			end
-		end
-		
 		local lastUpdateInstance = virtualNode._lastUpdateInstance
 		if lastUpdateInstance then
 			if not willDestroy then
@@ -565,13 +536,28 @@ local function createReconciler(): Types.Reconciler
 					end
 				end
 			end
+		end
+	end
+
+	local function unmountLifecycleProps(virtualNode: Types.VirtualNode)
+		local toCallWithHostInstance = {}
 	
-			local lastElement = virtualNode._currentElement
-			local onUnmountCB = lastElement.props[Symbols.OnUnmountWithHost]
-			if onUnmountCB then
-				table.insert(toCallWithHostInstance, onUnmountCB)
+		local lastElement = virtualNode._currentElement
+		local onUnmountCB = lastElement.props[Symbols.OnUnmountWithHost]
+		if onUnmountCB then
+			table.insert(toCallWithHostInstance, onUnmountCB)
+		end
+		
+		local specialPropCleanupCallbacks = virtualNode._specialPropCleanupCallbacks
+		if specialPropCleanupCallbacks then
+			virtualNode._specialPropCleanupCallbacks = nil
+			for i = 1, #specialPropCleanupCallbacks do
+				table.insert(toCallWithHostInstance, specialPropCleanupCallbacks[i])
 			end
-			
+		end
+		
+		local lastUpdateInstance = virtualNode._lastUpdateInstance
+		if lastUpdateInstance then
 			for i = 1, #toCallWithHostInstance do
 				task.spawn(toCallWithHostInstance[i], lastUpdateInstance)
 			end
@@ -771,6 +757,7 @@ local function createReconciler(): Types.Reconciler
 				
 				
 				updateChildren(virtualNode, instance, newElement.props[Symbol_Children])
+				updateLifecycleProps(newElement.props, instance)
 			end
 			return virtualNode
 		end
@@ -806,6 +793,7 @@ local function createReconciler(): Types.Reconciler
 			end
 			
 			updateChildren(virtualNode, virtualNode._instance, newElement.props[Symbol_Children])
+			updateLifecycleProps(newElement.props, virtualNode._instance)
 			return virtualNode
 		end
 		
@@ -829,6 +817,7 @@ local function createReconciler(): Types.Reconciler
 			end
 			
 			updateChildren(virtualNode, virtualNode._instance, newElement.props[Symbol_Children])
+			updateLifecycleProps(newElement.props, virtualNode.instance)
 			return virtualNode
 		end
 		
@@ -1233,6 +1222,8 @@ local function createReconciler(): Types.Reconciler
 			if siblingClusterCache then
 				siblingClusterCache.lastProvidedInstance = instance
 			end
+
+			mountLifecycleProps(virtualNode, props, instance)
 		end
 		mountByElementKind[ElementKinds.CreateInstance] = function(virtualNode)
 			local element = virtualNode._currentElement
@@ -1261,6 +1252,8 @@ local function createReconciler(): Types.Reconciler
 			if siblingClusterCache then
 				siblingClusterCache.lastProvidedInstance = instance
 			end
+
+			mountLifecycleProps(virtualNode, props, instance)
 		end
 		mountByElementKind[ElementKinds.Index] = function(virtualNode)
 			local element = virtualNode._currentElement
@@ -1296,6 +1289,8 @@ local function createReconciler(): Types.Reconciler
 				
 				mountChildren(virtualNode)
 				updateChildren(virtualNode, instance, props[Symbol_Children])
+
+				mountLifecycleProps(virtualNode, props, instance)
 			else
 				mountNodeOnChild(virtualNode)	-- hostContext.instance and hostContext.childKey
 												-- must exist in this case!
@@ -1636,18 +1631,21 @@ local function createReconciler(): Types.Reconciler
 		unmountByElementKind[ElementKinds.Decorate] = function(virtualNode)
 			unmountChildren(virtualNode)
 			unmountDecorationProps(virtualNode, false)
+			unmountLifecycleProps(virtualNode)
 		end
 		unmountByElementKind[ElementKinds.CreateInstance] = function(virtualNode)
 			unmountChildren(virtualNode)
 			local instance = virtualNode._instance
 			instance:Destroy()
 			unmountDecorationProps(virtualNode, true)
+			unmountLifecycleProps(virtualNode)
 		end
 		unmountByElementKind[ElementKinds.Stamp] = function(virtualNode)
 			unmountChildren(virtualNode)
 			local instance = virtualNode._instance
 			instance:Destroy()
 			unmountDecorationProps(virtualNode, true)
+			unmountLifecycleProps(virtualNode)
 		end
 		unmountByElementKind[ElementKinds.Portal] = function(virtualNode)
 			unmountChildren(virtualNode)
