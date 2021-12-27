@@ -489,6 +489,8 @@ local function createReconciler(): Types.Reconciler
 				end
 			)
 		end
+
+		updateLifecycleProps(props, instance)
 	end
 	
 	local function unmountDecorationProps(
@@ -942,7 +944,7 @@ local function createReconciler(): Types.Reconciler
 			siblingClusterCache.lastUpdateConsumedInstances = nextConsumedInstances
 
 			-- First pass: See which elements are incompatible by type
-			local shouldReplacePastIndex = nil
+			local shouldReplacePastIndex = #siblings + 1
 			local shouldUnmountIndicesInFirstPass = {}
 			for i = 1, #siblings do
 				local element = nonNilElements[i]
@@ -997,26 +999,22 @@ local function createReconciler(): Types.Reconciler
 			end
 			
 			-- Third pass: Unmount nodes from [shouldReplacePastIndex, #siblings]
-			if shouldReplacePastIndex then
-				for i = shouldReplacePastIndex, #siblings do
-					if not shouldUnmountIndicesInFirstPass[i] then
-						unmountVirtualNode(siblings[i])
-					end
+			for i = shouldReplacePastIndex, #siblings do
+				if not shouldUnmountIndicesInFirstPass[i] then
+					unmountVirtualNode(siblings[i])
 				end
 			end
 			
 			-- Mount nodes from [shouldReplacePastIndex, #siblings]
-			if shouldReplacePastIndex then
-				for i = shouldReplacePastIndex + 1, #siblings do
-					lastProvidedInstance = siblingClusterCache.lastProvidedInstance
-					nextConsumedInstances[i] = lastProvidedInstance
-					local node = mountVirtualNode(
-						nonNilElements[i],
-						siblingHost
-					)
-					if node then
-						table.insert(nextSiblings, node)
-					end
+			for i = shouldReplacePastIndex, #siblings do
+				lastProvidedInstance = siblingClusterCache.lastProvidedInstance
+				nextConsumedInstances[i] = lastProvidedInstance
+				local node = mountVirtualNode(
+					nonNilElements[i],
+					siblingHost
+				)
+				if node then
+					table.insert(nextSiblings, node)
 				end
 			end
 

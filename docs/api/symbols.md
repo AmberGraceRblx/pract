@@ -101,7 +101,7 @@ end
 ```
 ## Pract.OnMountWithHost
 
-Can be used as a key in the props of an Instance-modifying element. Will fire the listener when the element is mounted in a defered thread. The value in props should be typed as `(rbx: any, props: any, setOnCleanup: (cleanupCallback: () -> ()) -> ()) -> ()`
+Can be used as a key in the props of an Instance-modifying element. Will fire the listener when the element is mounted, in a spawned thread. The value in props should be typed as `(rbx: any, props: any, setOnCleanup: (cleanupCallback: () -> ()) -> ()) -> ()`
 
 Example:
 ```lua
@@ -143,7 +143,7 @@ end
 
 ## Pract.OnUpdateWithHost
 
-Can be used as a key in the props of an Instance-modifying element. Will fire the listener when the element is updated in a defered thread. The value in props should be typed as `(rbx: any, props: any) -> ()`
+Can be used as a key in the props of an Instance-modifying element. Will fire the listener when the element is updated or mounted, in a spawned thread. The value in props should be typed as `(rbx: any, props: any) -> ()`
 
 Example:
 ```lua
@@ -159,7 +159,7 @@ end
 
 ## Pract.OnUnmountWithHost
 
-Can be used as a key in the props of an Instance-modifying element. Will fire the listener when the element is unmounted in a defered thread. The value in props should be typed as `(rbx: any) -> ()`
+Can be used as a key in the props of an Instance-modifying element. Will fire the listener when the element is unmounted, in a spawned thread. The value in props should be typed as `(rbx: any) -> ()`
 
 ```lua
 type Props = {}
