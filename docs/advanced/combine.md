@@ -61,4 +61,127 @@ end)
 
 `Pract.combine` can make it really easy to make your UI cross-platform compatible, without having to re-write cross platform input code every time you create a new button! Simply create a decorator component like our `HoverInput` above, and combine it with a platform-agnostic visual component!
 
+## Host Propogation
+
+The order in which you combine elements matters when determining the _host context_ of each element being combined.
+
+For example, you can combine the element `Pract.create("Frame")` with `Pract.decorate({Size = UDim2.fromOffset(20, 20)})` to both create and decorate the same instance. As in the Hoverinput example, this can be used to make "decorative" components that add functionality to another pre-created element. The Pract reconciler will automatically match _decorative_ elements with _instancing_ element's hosts. This means that the order in which you combine elements matters.
+
+As a rule of thumb:
+
+- Place `Pract.stamp` and `Pract.create("ClassName")` elements earlier in the combined tuple.
+
+- Place `Pract.decorate` and `Pract.index` elements later in the combined tuple.
+
+- If a component returns a `Pract.stamp`/`Pract.create("ClassName")` element, place the `Pract.create(Component)` expression earlier in the combined tuple. Otherwise, place it later.
+
+## A Caveat On Combine Order
+
+When a `Pract.combine` element is updated, the order of combined elements matter when determining which elements are unmounted/remounted!
+Here's a simple example that highlights the behavior:
+
+```lua
+local function ValueDecorator(props: {value: string})
+    return Pract.decorate({
+        Value = props.value,
+        [Pract.OnMountWithHost] = function()
+            print(props.value .. " mounted!")
+        end,
+        [Pract.OnUnmountWithHost] = function()
+            print(props.value .. " unmounted!")
+        end,
+    })
+end
+
+local tree = Pract.mount(
+    Pract.combine(
+        Pract.create("StringValue"),
+        Pract.create(ValueDecorator, {value = "Foo"}),
+        Pract.create(ValueDecorator, {value = "Bar"})
+    ),
+    workspace,
+    "MyStringValue"
+)
+```
+
+This should create a StringValue named "MyStringValue" in workspace, with a value finally set to "Bar".
+The output should show that "Foo" mounted and then "Bar" mounted:
+
+```txt
+Foo mounted!
+Bar mounted!
+```
+
+If we update our tree with our "Foo" element removed, we will see the positionally-dependent behavior of `combine` in action:
+
+```lua
+Pract.update(
+    tree,
+    Pract.combine(
+        Pract.create("StringValue"),
+        Pract.create(ValueDecorator, {value = "Bar"})
+    )
+)
+```
+
+When our update finishes, we will still see a StringValue in workspace with a value of "Bar"... however, the output will show something interesting:
+
+```txt
+Bar unmounted!
+```
+
+What happened when we first mounted the tree is as follows:
+
+1. The `Pract.create("StringValue")` element is mounted, creating a StringValue
+2. Our first `ValueDecorator` component is created with the props `{value = "Foo"}`
+    2b. `OnMountWitHost` is called with the props `{value = "Foo"}`
+3. Our second `ValueDecorator` component is created with the props `{value = "Bar"}`
+    2b. `OnMountWithHost` is called with the props `{value = "Bar"}`
+
+When we updated our tree, Pract simply consolidated the ValueDecorator components:
+
+1. The `Pract.create("StringValue")` element is updated
+2. Our first `ValueDecorator` component is updated with the props `{value = "Bar"}` since we simply shifted our "Bar" component back one position in the tuple. This silently happens
+3. Our second `ValueDecorator` component (which was mounted with the props `{value = "Bar"}`) is unmounted, since there is no longer any element in that position.
+    3b. `OnUnmountWithHost` is called with the props `{value = "Bar"}`
+
+Pract will try to simplify and re-use an already-mounted component where possible. Keep this in mind when writing a `Pract.combine` expression.
+
+## Caveat On Combining Conditional Elements
+
+If your combine expression contains a conditional list of elements, make sure that all of your conditional elements (i.e. elements that are only _sometimes_ in a component's combine tuple) are placed _last_ in the combine tuple where possible.
+
+Example:
+```lua
+--!strict
+local Pract = require(game.ReplicatedStorage.Pract)
+local StampingComponent = require(game.ReplicatedStorage.StampingComponent)
+local RecoloringComponent = require(game.ReplicatedStorage.RecoloringComponent)
+local RepositioningComponent = require(game.ReplicatedStorage.RepositioningComponent)
+
+local function MyComponent(props: {reposition: boolean})
+    local elements: {Pract.Element} = {}
+
+    table.insert(
+        elements,
+        Pract.create(StampingComponent, {})
+    )
+    table.insert(
+        elements,
+        Pract.create(RecoloringComponent, {})
+    )
+
+    -- Because this element is conditional, we want it to be placed LAST in our array of elements!
+    if props.reposition then
+        table.insert(
+            elements,
+            Pract.create(RepositioningComponent, {})
+        )
+    end
+
+    -- Convert our array of elements to a tuple of combined elements
+    return Pract.combine(unpack(elements))
+end
+```
+
 #### Up next: [Using Pract.Children in Components](./children)

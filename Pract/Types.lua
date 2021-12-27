@@ -102,11 +102,8 @@ export type ContextProvider = {
 	unprovide: (name: string) -> (),
 }
 export type SiblingClusterCache = {
-	currentSiblingIdx: number,
-	providedInstanceHostSet: {[Instance]: boolean},
 	lastProvidedInstance: Instance?,
-	idxToProvidedInstanceHost: {[number]: Instance},
-	idxToConsumedInstanceHost: {[number]: Instance},
+	lastUpdateConsumedInstances: {[number]: Instance?},
 }
 export type HostContext = {	-- Immutable type used as an object reference passed down in trees; the
 							-- purpose of grouping these together is because typically components
