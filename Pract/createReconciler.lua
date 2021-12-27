@@ -573,7 +573,7 @@ local function createReconciler(): Types.Reconciler
 			end
 			
 			for i = 1, #toCallWithHostInstance do
-				task.defer(toCallWithHostInstance[i], lastUpdateInstance)
+				task.spawn(toCallWithHostInstance[i], lastUpdateInstance)
 			end
 		end
 	end
@@ -791,7 +791,7 @@ local function createReconciler(): Types.Reconciler
 			if siblingClusterCache then
 				siblingClusterCache.lastProvidedInstance = virtualNode._instance
 			end
-			
+
 			local success, err: string? = pcall(
 				updateDecorationProps,
 				virtualNode,
@@ -1634,20 +1634,20 @@ local function createReconciler(): Types.Reconciler
 
 		unmountByElementKind[ElementKinds.OnChild] = unmountOnChildNode
 		unmountByElementKind[ElementKinds.Decorate] = function(virtualNode)
-			unmountDecorationProps(virtualNode, false)
 			unmountChildren(virtualNode)
+			unmountDecorationProps(virtualNode, false)
 		end
 		unmountByElementKind[ElementKinds.CreateInstance] = function(virtualNode)
-			unmountDecorationProps(virtualNode, true)
 			unmountChildren(virtualNode)
 			local instance = virtualNode._instance
 			instance:Destroy()
+			unmountDecorationProps(virtualNode, true)
 		end
 		unmountByElementKind[ElementKinds.Stamp] = function(virtualNode)
-			unmountDecorationProps(virtualNode, true)
 			unmountChildren(virtualNode)
 			local instance = virtualNode._instance
 			instance:Destroy()
+			unmountDecorationProps(virtualNode, true)
 		end
 		unmountByElementKind[ElementKinds.Portal] = function(virtualNode)
 			unmountChildren(virtualNode)
