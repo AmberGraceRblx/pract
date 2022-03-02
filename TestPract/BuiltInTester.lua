@@ -239,7 +239,7 @@ local BuiltInTester: Types.UnitTester = function(
             end
             withIt(it)
         end
-        return describe
+        return describe :: any
     end
 
     for i = 1, #modules do

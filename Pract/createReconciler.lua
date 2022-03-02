@@ -1,6 +1,4 @@
-local CollectionService = game:GetService("CollectionService")
 --!strict
-
 local Types = require(script.Parent.Types)
 local PractGlobalSystems = require(script.Parent.PractGlobalSystems)
 
