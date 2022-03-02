@@ -13,12 +13,22 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: recursive
-      - name: Install roblox studio for windows
-        uses: OrbitalOwen/roblox-win-installer-action@latest
-        with:
-          cookie: ${{ secrets.ROBLOSECURITY }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-        timeout-minutes: 5
+      - name: download roblox install script
+        run: Invoke-WebRequest -Uri "https://raw.githubusercontent.com/OrbitalOwen/roblox-win-installer/master/install.py" -OutFile install.py
+      - name: download settings file
+        run: Invoke-WebRequest -Uri "https://raw.githubusercontent.com/OrbitalOwen/roblox-win-installer/master/GlobalSettings_13.xml" -OutFile GlobalSettings_13.xml
+      - name: install pip deps
+        run: pip install wget psutil
+      - name: install roblox
+        run: python install.py "${{ secrets.ROBLOSECURITY }}"
+      - name: Add RBXID to the Windows registry
+        run: REG ADD HKCU\Software\RobloxStudioBrowser\roblox.com /t REG_SZ /v .RBXID /d "${{ secrets.RBXID }}"
+      - name: Create fflag overrides
+        run: |
+          $flags = @{DFIntStudioUseNewLoginDataEndpointHundredthPercent=0; FFlagStudioUseNewLoginDataEndpoint=$false}
+          New-Item -Path 'C:/Program Files (x86)/Roblox/Versions/version-*/' -Name "ClientSettings" -ItemType "directory"
+          New-Item -Path 'C:/Program Files (x86)/Roblox/Versions/version-*/ClientSettings' -Name "ClientAppSettings.json"
+          $flags | ConvertTo-Json -depth 32| set-content -Path 'C:/Program Files (x86)/Roblox/Versions/version-*/ClientSettings/ClientAppSettings.json'
       - name: install foreman
         uses: rojo-rbx/setup-foreman@v1
         with:
