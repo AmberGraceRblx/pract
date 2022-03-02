@@ -1,4 +1,5 @@
 --!strict
+local CollectionService = game:GetService('CollectionService')
 local Types = require(script.Parent.Types)
 local PractGlobalSystems = require(script.Parent.PractGlobalSystems)
 
@@ -133,7 +134,6 @@ local function createReconciler(): Types.Reconciler
 		end
 		
 		do
-			local CollectionService = game:GetService('CollectionService')
 			specialApplyPropHandlers[Symbols.CollectionServiceTags] = function(
 				virtualNode,
 				newValue,
