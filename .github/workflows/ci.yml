@@ -14,7 +14,7 @@ jobs:
         with:
           submodules: recursive
       - name: Install roblox studio for windows
-      - uses: OrbitalOwen/roblox-win-installer-action@1.1
+        uses: OrbitalOwen/roblox-win-installer-action@1.1
         with:
           cookie: ${{ secrets.ROBLOSECURITY }}
           token: ${{ secrets.GITHUB_TOKEN }}
