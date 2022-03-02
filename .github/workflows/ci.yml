@@ -12,17 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          submodules: recursive
-      - name: download roblox install script
-        run: Invoke-WebRequest -Uri "https://raw.githubusercontent.com/OrbitalOwen/roblox-win-installer/master/install.py" -OutFile install.py
-      - name: Add RBXID to the Windows registry
-        run: REG ADD HKCU\Software\RobloxStudioBrowser\roblox.com /t REG_SZ /v .RBXID /d "${{ secrets.RBXID }}"
-      - name: download settings file
-        run: Invoke-WebRequest -Uri "https://raw.githubusercontent.com/OrbitalOwen/roblox-win-installer/master/GlobalSettings_13.xml" -OutFile GlobalSettings_13.xml
-      - name: install pip deps
-        run: pip install wget psutil
-      - name: install roblox
-        run: python install.py "${{ secrets.ROBLOSECURITY }}"
+          submodules: recursive]
+      - name: Install roblox studio for windows
+      - uses: OrbitalOwen/roblox-win-installer-action@1.1
+        with:
+          cookie: ${{ secrets.ROBLOSECURITY }}
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: install foreman
         uses: rojo-rbx/setup-foreman@v1
         with:
