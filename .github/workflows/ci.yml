@@ -18,6 +18,7 @@ jobs:
         with:
           cookie: ${{ secrets.ROBLOSECURITY }}
           token: ${{ secrets.GITHUB_TOKEN }}
+        timeout-minutes: 5
       - name: install foreman
         uses: rojo-rbx/setup-foreman@v1
         with:
