@@ -164,6 +164,15 @@ local function createReconciler(): Types.Reconciler
 
 		local function assertInRenderPhase()
 			if not currentHookParentNode then
+				error(
+					'Invalid hook call. Pract hooks can only be called inside of the body '
+					.. ' of a function component. This could happen for one of the '
+					.. ' following reasons:\n'
+					.. '1. You might be breaking the Rules of Hooks\n'
+					.. '2. You might have more than one copy of Pract in the same app\n'
+					.. 'See https://reactjs.org/link/invalid-hook-call for tips about how'
+					.. 'to debug and fix this problem.'
+				)
 			end
 		end
 
