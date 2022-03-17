@@ -30,7 +30,7 @@ Symbols.AttributeChangedSignals = createSymbol('AttributeChangedSymbols')
 Symbols.PropertyChangedSignals = createSymbol('PropertyChangedSignals')
 Symbols.OnMountWithHost = createSymbol('OnMountWithHost')
 Symbols.OnUnmountWithHost = createSymbol('OnUnmountWithHost')
-Symbols.OnUpdateWithHost = createSymbol('OnUpdateWithHost')
+Symbols.OnRenderWithHost = createSymbol('OnRenderWithHost')
 
 -- Decoration prop value symbols
 Symbols.None = createSymbol('None')

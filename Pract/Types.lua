@@ -96,10 +96,16 @@ export type LifecycleTyped<P> = {
 
 
 -- Internal reconciler types
-export type ContextProvider = {
+export type InternalContextProvider = {
 	find: (name: string) -> any?,
 	provide: (name: string, object: any?) -> (),
 	unprovide: (name: string) -> (),
+}
+export type PublicContextObject = {
+	Provider: ComponentTyped<{
+		value: any,
+		child: Element,
+	}>
 }
 export type SiblingClusterCache = {
 	lastProvidedInstance: Instance?,
@@ -111,14 +117,29 @@ export type HostContext = {	-- Immutable type used as an object reference passed
 							-- This reduces memory usage and simplifies node visiting processes.
 	instance: Instance?,
 	childKey: string?,
-	providers: {ContextProvider},
+	providers: {InternalContextProvider},
 	siblingClusterCache: SiblingClusterCache?,
+}
+export type EffectCallback = () -> (() -> ())?
+export type ComponentHookContext = {
+	createdHeartbeatCount: number,
+	cacheQueueUpdateClosure: (() -> ())?,
+	orderedStates: {
+		useState: {{ value: any }}?,
+		useMemo: {{ value: any, deps: {any}}}?,
+		useEffect: {{
+			cleanup: (() -> ())?,
+			deps: {any}?,
+			cancelled: boolean,
+		}}?,
+	},
 }
 export type VirtualNode = {
 	[any]: any,
 	_wasUnmounted: boolean,
 	_currentElement: Element,
 	_hostContext: HostContext,
+	_hookContext: ComponentHookContext?
 }
 export type PractTree = {
 	[Symbol]: any,
@@ -137,7 +158,7 @@ export type Reconciler = {
 	createHost: (
 		instance: Instance?,
 		key: string?,
-		providers: {ContextProvider},
+		providers: {InternalContextProvider},
 		siblingClusterCache: SiblingClusterCache?
 	) -> HostContext
 }

@@ -141,7 +141,7 @@ local function TweeningFrameOnMount(props: Props)
 end
 ```
 
-## Pract.OnUpdateWithHost
+## Pract.OnRenderWithHost
 
 Can be used as a key in the props of an Instance-modifying element. Will fire the listener when the element is updated or mounted, in a spawned thread. The value in props should be typed as `(rbx: any, props: any) -> ()`
 
@@ -150,7 +150,7 @@ Example:
 type Props = {}
 local function PrintsOnUpdate(props: Props)
     return Pract.create('Frame', {
-        [Pract.OnUpdateWithHost] = function(rbx: Frame, props: Props)
+        [Pract.OnRenderWithHost] = function(rbx: Frame, props: Props)
             print("The component managing", rbx:GetFullName(), "has updated!")
         end,
     })

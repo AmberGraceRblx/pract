@@ -3,12 +3,29 @@
 	Runs system singletons and holds state singletons for optimizing Pract
 ]]
 
+local Types = require(script.Parent.Types)
 local RunService = game:GetService('RunService')
 local PractGlobalSystems = {}
 
 PractGlobalSystems.HeartbeatFrameCount = 0
 PractGlobalSystems.ON_CHILD_TIMEOUT_INTERVAL = 10
 PractGlobalSystems.HeartbeatSignal = RunService.Heartbeat
+PractGlobalSystems._reconcilerHookCallbacks = (setmetatable(
+	{},
+	{
+		__index = function(...)
+			error("Invalid hook call. Hooks can only be called inside of the body of a function component. ")
+		end
+	}
+) :: any) :: {
+	useState: (initialState: any | () -> ()) -> (
+		any,
+		(nextState: any) -> ()
+	),
+	useMemo: (create: () -> any, deps: {any}?) -> any,
+	useEffect: (create: (queueUpdate: () -> ()) -> (() -> ())?, deps: {any}?) -> (),
+	useConsumer: (context: Types.PublicContextObject) -> any,
+}
 
 local whileRunningConns = {} :: {RBXScriptConnection}
 local running = false
