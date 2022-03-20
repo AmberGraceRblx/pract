@@ -68,6 +68,7 @@ local function createReconciler(): Types.Reconciler
 		local currentHookComponent: Types.Component? = nil
 		local currentHookProps: Types.PropsArgument? = nil
 		local currentHookNextContext: Types.ComponentHookContext? = nil
+		local currentMountingHostContext: Types.HostContext? = nil
 
 		local function compareDeps(
 			lastDeps: {any}?,
@@ -139,11 +140,13 @@ local function createReconciler(): Types.Reconciler
 		local function callChildFunctionalComponent(
 			parentNode: Types.VirtualNode,
 			component: Types.Component,
-			props: Types.PropsArgument
+			props: Types.PropsArgument,
+			mountingHostContext: Types.HostContext?
 		)
 			currentHookParentNode = parentNode
 			currentHookComponent = component
 			currentHookProps = props
+			currentMountingHostContext = mountingHostContext
 			-- Always reset here in case external code errored last reconcile
 			currentHookNextContext = nil
 			
@@ -424,8 +427,15 @@ local function createReconciler(): Types.Reconciler
 			end,
 			useConsumer = function(context: any)
 				assertInRenderPhase()
-				local childNode = (currentHookParentNode :: any)._child :: Types.VirtualNode
-				local childContext = childNode._hostContext
+				local childContext; do
+					local childNode = (currentHookParentNode :: any)._child :: Types.VirtualNode?
+					if childNode then
+						childContext = childNode._hostContext
+					else
+						childContext = currentMountingHostContext
+							or (currentHookParentNode :: Types.VirtualNode)._hostContext
+					end
+				end
 				local providerChain = childContext.providers
 				
 				local key = context._symbol
@@ -451,7 +461,8 @@ local function createReconciler(): Types.Reconciler
 				callChildFunctionalComponent(
 					parentNode,
 					component,
-					props
+					props,
+					context
 				),
 				context or parentNode._hostContext
 			)

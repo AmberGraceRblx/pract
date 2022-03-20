@@ -47,6 +47,7 @@ Pract.useStateTyped = (Pract.useState :: any) :: <S>(initialState: S) -> (S, (S)
 Pract.useStateThunkTyped = (Pract.useState :: any) :: <S>(initialState: () -> S) -> (S, (S) -> ())
 Pract.useMemo = require(script.useMemo)
 Pract.useEffect = require(script.useEffect)
+Pract.createContext = require(script.createContext)
 Pract.useConsumer = require(script.useConsumer)
 Pract.useSignalUpdates = require(script.useSignalUpdates)
 
