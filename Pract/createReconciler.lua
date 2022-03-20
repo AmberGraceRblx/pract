@@ -75,15 +75,13 @@ local function createReconciler(): Types.Reconciler
 		)
 			if lastDeps and nextDeps then
 				if #lastDeps == #nextDeps then
-					local depsMatch = true
 					for i = 1, #lastDeps do
 						if lastDeps[i] ~= nextDeps[i] then
-							depsMatch = false
-							break
+							return false
 						end
 					end
 
-					return depsMatch
+					return true
 				end
 				return false
 			end
@@ -114,20 +112,23 @@ local function createReconciler(): Types.Reconciler
 
 						local shouldCleanup = true
 						if nextUseEffectStates then
-							local state = nextUseEffectStates[i]
-							if state then
+							local nextState = nextUseEffectStates[i]
+							if nextState then
 								shouldCleanup = not compareDeps(
 									lastState.deps,
-									nextUseEffectStates[i].deps
+									nextState.deps
 								)
 							end
 						end
 						
-						local cleanup = lastState.cleanup
-						if cleanup then
-							task.spawn(cleanup)
+						if shouldCleanup then
+							local cleanup = lastState.cleanup
+							local saveCancelled = lastState.cancelled
+							lastState.cancelled = true
+							if cleanup and not saveCancelled then
+								task.spawn(cleanup)
+							end
 						end
-						lastState.cancelled = true
 					end
 				end
 			end
@@ -382,11 +383,11 @@ local function createReconciler(): Types.Reconciler
 					if nextDeps and compareDeps(lastOrderedState.deps, nextDeps) then
 						shouldRunEffect = false
 					else
+						lastOrderedState.cancelled = true
 						local cleanup = lastOrderedState.cleanup
 						if cleanup then
 							task.spawn(cleanup)
 						end
-						lastOrderedState.cancelled = true
 						shouldRunEffect = true
 					end
 				else
