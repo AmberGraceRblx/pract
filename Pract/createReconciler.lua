@@ -198,7 +198,12 @@ local function createReconciler(): Types.Reconciler
 			nextHookContext: Types.ComponentHookContext,
 			id: string
 		): number
-			return ((nextHookContext.orderedStates :: any)[id] or 0) + 1
+			local orderedStates = nextHookContext.orderedStates[id]
+			if orderedStates then
+				return #orderedStates + 1
+			else
+				return 1
+			end
 		end
 
 		local function createQueueUpdateClosure()
