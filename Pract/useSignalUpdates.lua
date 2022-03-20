@@ -7,7 +7,7 @@
 local PractGlobalSystems = require(script.Parent.PractGlobalSystems)
 local useEffect = require(script.Parent.useEffect)
 
-local function useSignalListener(signal: RBXScriptSignal): ()
+local function useSignalUpdates(signal: RBXScriptSignal): ()
     return useEffect(function(queueUpdate)
         local conn = signal:Connect(queueUpdate)
         return function()
@@ -15,4 +15,4 @@ local function useSignalListener(signal: RBXScriptSignal): ()
         end
     end, {signal})
 end
-return useSignalListener
+return useSignalUpdates

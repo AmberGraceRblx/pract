@@ -48,7 +48,7 @@ Pract.useStateThunkTyped = (Pract.useState :: any) :: <S>(initialState: () -> S)
 Pract.useMemo = require(script.useMemo)
 Pract.useEffect = require(script.useEffect)
 Pract.useConsumer = require(script.useConsumer)
-Pract.useSignalListener = require(script.useSignalListener)
+Pract.useSignalUpdates = require(script.useSignalUpdates)
 
 -- Virtual tree functions
 local createReconciler = require(script.createReconciler)
