@@ -43,6 +43,8 @@ Pract.combine = require(script.combine)
 
 -- Functional component hooks
 Pract.useState = require(script.useState)
+Pract.useStateTyped = (Pract.useState :: any) :: <S>(initialState: S) -> (S, (S) -> ())
+Pract.useStateThunkTyped = (Pract.useState :: any) :: <S>(initialState: () -> S) -> (S, (S) -> ())
 Pract.useMemo = require(script.useMemo)
 Pract.useEffect = require(script.useEffect)
 Pract.useConsumer = require(script.useConsumer)
