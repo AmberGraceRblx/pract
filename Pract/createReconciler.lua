@@ -148,6 +148,8 @@ local function createReconciler(): Types.Reconciler
 			
 			local saveHookContext = parentNode._hookContext
 			local element = component(props)
+			parentNode._childLastComponent = component
+			parentNode._childLastProps = props
 			
 			-- Clean up all hook side effects beyond what was newly defined
 			if saveHookContext ~= currentHookNextContext then
@@ -176,23 +178,27 @@ local function createReconciler(): Types.Reconciler
 			end
 		end
 
+		local function getLastHookContext(): Types.ComponentHookContext?
+			return (currentHookParentNode :: Types.VirtualNode)._hookContext
+		end
 		local function getNextHookContext(): Types.ComponentHookContext
 			if currentHookNextContext then
 				return currentHookNextContext
 			else
+				local cacheQueueUpdateClosure = nil
+				local lastContext = (currentHookParentNode :: Types.VirtualNode)._hookContext
+				if lastContext then
+					cacheQueueUpdateClosure = lastContext.cacheQueueUpdateClosure
+				end
+
 				local nextContext: Types.ComponentHookContext = {
 					orderedStates = {},
-					createdHeartbeatCount = PractGlobalSystems.HeartbeatFrameCount
+					createdHeartbeatCount = PractGlobalSystems.HeartbeatFrameCount,
+					cacheQueueUpdateClosure = cacheQueueUpdateClosure
 				}
 				currentHookNextContext = nextContext
 				return nextContext
 			end
-		end
-		local function getLastHookContext(): Types.ComponentHookContext?
-			if currentHookParentNode then
-				return currentHookParentNode._hookContext
-			end
-			return nil
 		end
 		local function getOrderedStateIndex(
 			nextHookContext: Types.ComponentHookContext,
@@ -217,50 +223,43 @@ local function createReconciler(): Types.Reconciler
 			if context.cacheQueueUpdateClosure then
 				return context.cacheQueueUpdateClosure
 			end
-
-			local closureArgs: {any} = {
-				currentHookParentNode,
-				currentHookComponent,
-				currentHookProps
-			}
-			local updateWasQueued = false
+			
+			local closure_parentNode = currentHookParentNode :: Types.VirtualNode
+			local alreadyQueueing = false
+			local lastUpdateHeartbeatCount = context.createdHeartbeatCount
 			local function queueUpdate()
-				if updateWasQueued then
+				if closure_parentNode._wasUnmounted then
 					return
 				end
-				if closureArgs[1]._wasUnmounted then
+				if alreadyQueueing then
 					return
 				end
-				if closureArgs[1]._hookContext ~= context then
-					return
-				end
-
-				-- An update should only be queued once before another closure is created.
-				updateWasQueued = true
+				
+				alreadyQueueing = true
 
 				task.defer(function()
-					if closureArgs[1]._wasUnmounted then
-						return
-					end
-					if closureArgs[1]._hookContext ~= context then
+					if closure_parentNode._wasUnmounted then
 						return
 					end
 
 					if
 						PractGlobalSystems.HeartbeatFrameCount
-						== context.createdHeartbeatCount
+						== lastUpdateHeartbeatCount
 					then
 						PractGlobalSystems.HeartbeatSignal:Wait()
 					end
 					
-					if closureArgs[1]._wasUnmounted then
-						return
-					end
-					if closureArgs[1]._hookContext ~= context then
+					if closure_parentNode._wasUnmounted then
 						return
 					end
 					
-					updateChildFunctionalComponent(unpack(closureArgs))
+					alreadyQueueing = false
+					lastUpdateHeartbeatCount = PractGlobalSystems.HeartbeatFrameCount
+					updateChildFunctionalComponent(
+						closure_parentNode,
+						closure_parentNode._childLastComponent,
+						closure_parentNode._childLastProps
+					)
 				end)
 			end
 			context.cacheQueueUpdateClosure = queueUpdate
@@ -309,15 +308,19 @@ local function createReconciler(): Types.Reconciler
 				table.insert(nextOrderedStates, { value = nextStateValue })
 
 				local queueUpdate = createQueueUpdateClosure()
-				local function setStateAtIndex(index, nextValue: any)
-					nextOrderedStates[index] = {
-						value = nextValue
-					}
-					queueUpdate()
-				end
+				local closure_parentNode = currentHookParentNode :: Types.VirtualNode
 
 				return nextStateValue, function(stateUpdate)
-					setStateAtIndex(index, stateUpdate)
+					local latestContext = closure_parentNode._hookContext
+					if latestContext then
+						local latestOrderedStates = latestContext.orderedStates.useState
+						if latestOrderedStates then
+							latestOrderedStates[index] = {
+								value = stateUpdate
+							}
+							queueUpdate()
+						end
+					end
 				end
 			end,
 			useMemo = function(create, nextDeps)
