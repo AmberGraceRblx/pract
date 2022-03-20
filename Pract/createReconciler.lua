@@ -204,8 +204,7 @@ local function createReconciler(): Types.Reconciler
 		local function createQueueUpdateClosure()
 			assertInRenderPhase()
 
-			local context = (currentHookParentNode :: Types.VirtualNode)._hookContext
-				:: Types.ComponentHookContext
+			local context = currentHookNextContext :: Types.ComponentHookContext
 			if not context then
 				return function() end
 			end
@@ -392,12 +391,13 @@ local function createReconciler(): Types.Reconciler
 					cancelled = false
 				}
 				if shouldRunEffect then
+					local queueUpdate = createQueueUpdateClosure()
 					task.defer(function()
 						if nextState.cancelled then
 							return
 						end
 
-						nextState.cleanup = effect(createQueueUpdateClosure())
+						nextState.cleanup = effect(queueUpdate)
 					end)
 				end
 				
