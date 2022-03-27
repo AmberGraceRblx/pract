@@ -4,7 +4,6 @@
     Pract.withSignal
 ]]
 
-local PractGlobalSystems = require(script.Parent.PractGlobalSystems)
 local useEffect = require(script.Parent.useEffect)
 
 local function useSignalUpdates(signal: RBXScriptSignal): ()
