@@ -108,27 +108,34 @@ local function createReconciler(): Types.Reconciler
 						nextUseEffectStates = nextOrderedStates.useEffect
 					end
 
-					for i = 1, #lastUseEffectStates do
+					for
+						i = if nextUseEffectStates then #nextUseEffectStates else 0,
+							#lastUseEffectStates
+					do
 						local lastState = lastUseEffectStates[i]
-
-						local shouldCleanup = true
-						if nextUseEffectStates then
-							local nextState = nextUseEffectStates[i]
-							if nextState then
-								shouldCleanup = not compareDeps(
-									lastState.deps,
-									nextState.deps
-								)
-							end
+						local cleanup = lastState.cleanup
+						local saveCancelled = lastState.cancelled
+						lastState.cancelled = true
+						if cleanup and not saveCancelled then
+							task.spawn(cleanup)
 						end
-						
-						if shouldCleanup then
-							local cleanup = lastState.cleanup
-							local saveCancelled = lastState.cancelled
-							lastState.cancelled = true
-							if cleanup and not saveCancelled then
-								task.spawn(cleanup)
-							end
+					end
+				end
+				local lastCustomHookStates = lastOrderedStates.customHook
+				if lastCustomHookStates then
+					local nextCustomHookStates = nil
+					if nextOrderedStates then
+						nextCustomHookStates = nextOrderedStates.customHook
+					end
+
+					for
+						i = if nextCustomHookStates then #nextCustomHookStates else 0,
+							#lastCustomHookStates
+					do
+						local lastState = lastCustomHookStates[i]
+						local cleanup = lastState.closure.cleanup
+						if cleanup then
+							task.spawn(cleanup)
 						end
 					end
 				end
@@ -449,6 +456,71 @@ local function createReconciler(): Types.Reconciler
 				
 				error(tostring(context) .. " was not provided by a parent component!")
 			end,
+			customHook = (function<HookArgs..., HookReturns...>(
+				lifecycleClosureCB: (
+					queueUpdate: () -> ()
+				) -> Types.CustomHookLifecycle<(HookArgs...) -> HookReturns...>,
+				...: HookArgs...
+			): HookReturns...
+				assertInRenderPhase()
+				local lastHookContext = getLastHookContext()
+				local nextHookContext = getNextHookContext()
+				local index = getOrderedStateIndex(
+					nextHookContext,
+					"customHook"
+				)
+				
+				local lastOrderedState = nil
+				if lastHookContext then
+					local lastOrderedStates = lastHookContext.orderedStates.customHook
+					if lastOrderedStates then
+						lastOrderedState = lastOrderedStates[index]
+					end
+				end
+				
+				local shouldCreateClosure
+				if lastOrderedState ~= nil then
+					if lifecycleClosureCB ~= lastOrderedState.createClosure then
+						shouldCreateClosure = true
+
+						local lastClosureCleanup = lastOrderedState.closure.cleanup
+						if lastClosureCleanup then
+							task.spawn(lastClosureCleanup)
+						end
+					else
+						shouldCreateClosure = false
+					end
+				else
+					shouldCreateClosure = true
+				end
+
+				local nextClosure
+				if shouldCreateClosure then
+					local queueUpdate = createQueueUpdateClosure()
+					nextClosure = lifecycleClosureCB(queueUpdate)
+				else
+					nextClosure = (lastOrderedState :: any).closure
+				end
+
+				local nextState = {
+					closure = nextClosure,
+					createClosure = lifecycleClosureCB,
+				}
+
+				local nextOrderedStates
+				do
+					local _nextOrderedStates = nextHookContext.orderedStates.customHook
+					if _nextOrderedStates then
+						nextOrderedStates = _nextOrderedStates
+					else
+						nextOrderedStates = {}
+						nextHookContext.orderedStates.customHook = nextOrderedStates
+					end
+				end
+				table.insert(nextOrderedStates, nextState)
+
+				return nextClosure.call(...)
+			end) :: any, 
 		}
 
 		mountChildFunctionalComponent = function(

@@ -25,6 +25,7 @@ export type ClassComponentSelf = Types.ClassComponentSelf
 export type ClassState = Types.ClassState
 export type Lifecycle = Types.Lifecycle
 export type Context = Types.PublicContextObject
+export type HookLifecycle<T = (...any) -> ...any> = Types.CustomHookLifecycle<T>
 -- export type LifecycleTyped<P> = Types.LifecycleTyped<P>
 
 -- Public library values
@@ -50,6 +51,7 @@ Pract.useEffect = require(script.useEffect)
 Pract.createContext = require(script.createContext)
 Pract.useConsumer = require(script.useConsumer)
 Pract.useSignalUpdates = require(script.useSignalUpdates)
+Pract.createHook = require(script.createHook)
 
 -- Virtual tree functions
 local createReconciler = require(script.createReconciler)

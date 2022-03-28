@@ -92,6 +92,10 @@ export type LifecycleTyped<P> = {
 	didUpdate: ((props: P) -> ())?,
 	willUnmount: ((props: P) -> ())?,
 }
+export type CustomHookLifecycle<T> = {
+	call:  T,
+	cleanup: (() -> ())?,
+}
 
 
 
@@ -132,6 +136,7 @@ export type ComponentHookContext = {
 			deps: {any}?,
 			cancelled: boolean,
 		}}?,
+		customHook: {{ closure: any, createClosure: any }}?,
 	},
 }
 export type VirtualNode = {
@@ -162,5 +167,11 @@ export type Reconciler = {
 		siblingClusterCache: SiblingClusterCache?
 	) -> HostContext
 }
+export type HookReconciler = <HookArgs..., HookReturns...>(
+	lifecycleClosureCB: (
+		queueUpdate: () -> ()
+	) -> CustomHookLifecycle<(HookArgs...) -> HookReturns...>,
+	HookArgs...
+) -> HookReturns...
 
 return nil
