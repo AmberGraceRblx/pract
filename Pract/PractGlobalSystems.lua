@@ -25,6 +25,7 @@ PractGlobalSystems._reconcilerHookCallbacks = (setmetatable(
 	useMemo: (create: () -> any, deps: {any}?) -> any,
 	useEffect: (create: (queueUpdate: () -> ()) -> (() -> ())?, deps: {any}?) -> (),
 	useConsumer: (context: Types.PublicContextObject) -> any,
+	customHook: Types.HookReconciler,
 }
 
 local whileRunningConns = {} :: {RBXScriptConnection}
