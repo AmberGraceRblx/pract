@@ -109,7 +109,7 @@ local function createReconciler(): Types.Reconciler
 					end
 
 					for
-						i = if nextUseEffectStates then #nextUseEffectStates else 1,
+						i = if nextUseEffectStates then (#nextUseEffectStates + 1) else 1,
 							#lastUseEffectStates
 					do
 						local lastState = lastUseEffectStates[i]
@@ -129,7 +129,7 @@ local function createReconciler(): Types.Reconciler
 					end
 
 					for
-						i = if nextCustomHookStates then #nextCustomHookStates else 1,
+						i = if nextCustomHookStates then (#nextCustomHookStates + 1) else 1,
 							#lastCustomHookStates
 					do
 						local lastState = lastCustomHookStates[i]
