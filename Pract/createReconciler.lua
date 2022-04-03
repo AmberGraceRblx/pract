@@ -387,11 +387,13 @@ local function createReconciler(): Types.Reconciler
 						lastOrderedState = lastOrderedStates[index]
 					end
 				end
-				
+
 				local shouldRunEffect
+				local reuseCleanup: (() -> ())? = nil
 				if lastOrderedState ~= nil then
 					if nextDeps and compareDeps(lastOrderedState.deps, nextDeps) then
 						shouldRunEffect = false
+						reuseCleanup =  lastOrderedState.cleanup
 					else
 						lastOrderedState.cancelled = true
 						local cleanup = lastOrderedState.cleanup
@@ -406,17 +408,20 @@ local function createReconciler(): Types.Reconciler
 
 				local nextState = {
 					deps = nextDeps :: {any}?,
-					cleanup = nil :: (() -> ())?,
+					cleanup = reuseCleanup,
 					cancelled = false
 				}
 				if shouldRunEffect then
 					local queueUpdate = createQueueUpdateClosure()
-					task.defer(function()
+					task.spawn(function()
+						local cleanup = effect(queueUpdate)
 						if nextState.cancelled then
+							if cleanup then
+								cleanup()
+							end
 							return
 						end
-
-						nextState.cleanup = effect(queueUpdate)
+						nextState.cleanup = cleanup
 					end)
 				end
 				
