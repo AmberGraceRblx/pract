@@ -325,17 +325,29 @@ local function createReconciler(): Types.Reconciler
 					local closure_parentNode = currentHookParentNode :: Types.VirtualNode
 					
 					cacheSetState = function(stateUpdate)
-						local latestContext = closure_parentNode._hookContext
-						if latestContext and not closure_parentNode._wasUnmounted then
-							local latestOrderedStates = latestContext.orderedStates.useState
-							if latestOrderedStates then
-								latestOrderedStates[index] = {
-									value = stateUpdate,
-									setState = cacheSetState
-								}
-								queueUpdate()
+						-- setState and queueUpdate calls are currently expected
+						-- to be able to be called from any point, including
+						-- inside a render function.
+						-- Updates will simply be deferred until all non-yielding
+						-- threads finish.
+						
+						-- This allows for behavior such as calling setState twice
+						-- in a row without reconciling twice in a row,
+						-- as well as calling setState during an effect.
+						
+						task.defer(function()
+							local latestContext = closure_parentNode._hookContext
+							if latestContext and not closure_parentNode._wasUnmounted then
+								local latestOrderedStates = latestContext.orderedStates.useState
+								if latestOrderedStates then
+									latestOrderedStates[index] = {
+										value = stateUpdate,
+										setState = cacheSetState
+									}
+									queueUpdate()
+								end
 							end
-						end
+						end)
 					end
 				end
 				table.insert(
