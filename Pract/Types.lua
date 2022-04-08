@@ -129,7 +129,7 @@ export type ComponentHookContext = {
 	createdHeartbeatCount: number,
 	cacheQueueUpdateClosure: (() -> ())?,
 	orderedStates: {
-		useState: {{ value: any }}?,
+		useState: {{ value: any, setState: (value: any) -> () }}?,
 		useMemo: {{ value: any, deps: {any}}}?,
 		useEffect: {{
 			cleanup: (() -> ())?,

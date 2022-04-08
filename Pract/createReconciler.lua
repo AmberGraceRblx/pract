@@ -316,23 +316,37 @@ local function createReconciler(): Types.Reconciler
 						nextHookContext.orderedStates.useState = nextOrderedStates
 					end
 				end
-				table.insert(nextOrderedStates, { value = nextStateValue })
-
-				local queueUpdate = createQueueUpdateClosure()
-				local closure_parentNode = currentHookParentNode :: Types.VirtualNode
-
-				return nextStateValue, function(stateUpdate)
-					local latestContext = closure_parentNode._hookContext
-					if latestContext then
-						local latestOrderedStates = latestContext.orderedStates.useState
-						if latestOrderedStates then
-							latestOrderedStates[index] = {
-								value = stateUpdate
-							}
-							queueUpdate()
+				
+				local cacheSetState
+				if lastOrderedState then
+					cacheSetState = lastOrderedState.setState
+				else
+					local queueUpdate = createQueueUpdateClosure()
+					local closure_parentNode = currentHookParentNode :: Types.VirtualNode
+					
+					cacheSetState = function(stateUpdate)
+						local latestContext = closure_parentNode._hookContext
+						if latestContext and not closure_parentNode._wasUnmounted then
+							local latestOrderedStates = latestContext.orderedStates.useState
+							if latestOrderedStates then
+								latestOrderedStates[index] = {
+									value = stateUpdate,
+									setState = cacheSetState
+								}
+								queueUpdate()
+							end
 						end
 					end
 				end
+				table.insert(
+					nextOrderedStates,
+					{
+						value = nextStateValue,
+						setState = cacheSetState
+					}
+				)
+
+				return nextStateValue, cacheSetState
 			end,
 			useMemo = function(create, nextDeps)
 				assertInRenderPhase()
