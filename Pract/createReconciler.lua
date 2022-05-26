@@ -440,7 +440,7 @@ local function createReconciler(): Types.Reconciler
 				if shouldRunEffect then
 					local queueUpdate = createQueueUpdateClosure()
 					task.spawn(function()
-						local cleanup = effect(queueUpdate)
+						local cleanup = (effect :: any)(queueUpdate)
 						if nextState.cancelled then
 							if cleanup then
 								cleanup()

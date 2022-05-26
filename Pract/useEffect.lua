@@ -8,7 +8,10 @@
 
 local PractGlobalSystems = require(script.Parent.PractGlobalSystems)
 
-local function useEffect<T--[[=any]]>(effect: (queueUpdate: () -> ()) -> (() -> ())?, deps: {any}?): ()
+local function useEffect<T--[[=any]]>(
+    effect: ((queueUpdate: () -> ()) -> ()) | ((queueUpdate: () -> ()) -> (() -> ())),
+    deps: {any}?
+): ()
     return PractGlobalSystems._reconcilerHookCallbacks.useEffect(effect, deps)
 end
 return useEffect
