@@ -35,7 +35,6 @@ local NOOP = function() end
 -- Creates a closure-based reconciler which handles Pract systems globally
 
 local function createReconciler(): Types.Reconciler
-	
 	local reconciler: Types.Reconciler
 	local mountVirtualNode: (
 		element: Types.Element | boolean | nil,
@@ -58,6 +57,540 @@ local function createReconciler(): Types.Reconciler
 	) -> Types.PractTree
 	local updateVirtualTree
 	local unmountVirtualTree
+
+	-- Closure for calling functional components with hook context included, as well as
+	-- unmounting these components.
+	local mountChildFunctionalComponent
+	local updateChildFunctionalComponent
+	local unmountChildFunctionalComponent
+	do
+		local currentHookParentNode: Types.VirtualNode? = nil
+		local currentHookComponent: Types.Component? = nil
+		local currentHookProps: Types.PropsArgument? = nil
+		local currentHookNextContext: Types.ComponentHookContext? = nil
+		local currentMountingHostContext: Types.HostContext? = nil
+
+		local function compareDeps(
+			lastDeps: {any}?,
+			nextDeps: {any}?
+		)
+			if lastDeps and nextDeps then
+				if #lastDeps == #nextDeps then
+					for i = 1, #lastDeps do
+						if lastDeps[i] ~= nextDeps[i] then
+							return false
+						end
+					end
+
+					return true
+				end
+				return false
+			end
+			-- If either dependencies are nil, break memoization
+			return false
+		end
+
+		local function cleanupLastHookContext(
+			lastHookContext: Types.ComponentHookContext?,
+			nextHookContext: Types.ComponentHookContext?
+		)
+			if lastHookContext then
+				local nextOrderedStates = nil
+				if nextHookContext then
+					nextOrderedStates = nextHookContext.orderedStates
+				end
+
+				local lastOrderedStates = lastHookContext.orderedStates
+				local lastUseEffectStates = lastOrderedStates.useEffect
+				if lastUseEffectStates then
+					local nextUseEffectStates = nil
+					if nextOrderedStates then
+						nextUseEffectStates = nextOrderedStates.useEffect
+					end
+
+					for
+						i = if nextUseEffectStates then (#nextUseEffectStates + 1) else 1,
+							#lastUseEffectStates
+					do
+						local lastState = lastUseEffectStates[i]
+						local cleanup = lastState.cleanup
+						local saveCancelled = lastState.cancelled
+						lastState.cancelled = true
+						if cleanup and not saveCancelled then
+							task.spawn(cleanup)
+						end
+					end
+				end
+				local lastCustomHookStates = lastOrderedStates.customHook
+				if lastCustomHookStates then
+					local nextCustomHookStates = nil
+					if nextOrderedStates then
+						nextCustomHookStates = nextOrderedStates.customHook
+					end
+
+					for
+						i = if nextCustomHookStates then (#nextCustomHookStates + 1) else 1,
+							#lastCustomHookStates
+					do
+						local lastState = lastCustomHookStates[i]
+						local cleanup = lastState.closure.cleanup
+						if cleanup then
+							task.spawn(cleanup)
+						end
+					end
+				end
+			end
+		end
+
+		-- Current conventional requirement from reconciler: the functional component
+		-- child node muMUSTst ALWAYS have a single "_child" node under it.
+		local function callChildFunctionalComponent(
+			parentNode: Types.VirtualNode,
+			component: Types.Component,
+			props: Types.PropsArgument,
+			mountingHostContext: Types.HostContext?
+		)
+			currentHookParentNode = parentNode
+			currentHookComponent = component
+			currentHookProps = props
+			currentMountingHostContext = mountingHostContext
+			-- Always reset here in case external code errored last reconcile
+			currentHookNextContext = nil
+			
+			local saveHookContext = parentNode._hookContext
+			local element = component(props)
+			parentNode._childLastComponent = component
+			parentNode._childLastProps = props
+			
+			-- Clean up all hook side effects beyond what was newly defined
+			if saveHookContext ~= currentHookNextContext then
+				cleanupLastHookContext(saveHookContext, currentHookNextContext)
+				parentNode._hookContext = currentHookNextContext
+			end
+			
+			currentHookParentNode = nil
+			currentHookComponent = nil
+			currentHookProps = nil
+			currentHookNextContext = nil
+			return element
+		end
+
+		local function assertInRenderPhase()
+			if not currentHookParentNode then
+				error(
+					'Invalid hook call. Pract hooks can only be called inside of the body '
+					.. ' of a function component. This could happen for one of the '
+					.. ' following reasons:\n'
+					.. '1. You might be breaking the Rules of Hooks\n'
+					.. '2. You might have more than one copy of Pract in the same app\n'
+					.. 'See https://reactjs.org/link/invalid-hook-call for tips about how'
+					.. 'to debug and fix this problem.'
+				)
+			end
+		end
+
+		local function getLastHookContext(): Types.ComponentHookContext?
+			return (currentHookParentNode :: Types.VirtualNode)._hookContext
+		end
+		local function getNextHookContext(): Types.ComponentHookContext
+			if currentHookNextContext then
+				return currentHookNextContext
+			else
+				local cacheQueueUpdateClosure = nil
+				local lastContext = (currentHookParentNode :: Types.VirtualNode)._hookContext
+				if lastContext then
+					cacheQueueUpdateClosure = lastContext.cacheQueueUpdateClosure
+				end
+
+				local nextContext: Types.ComponentHookContext = {
+					orderedStates = {},
+					createdHeartbeatCount = PractGlobalSystems.HeartbeatFrameCount,
+					cacheQueueUpdateClosure = cacheQueueUpdateClosure
+				}
+				currentHookNextContext = nextContext
+				return nextContext
+			end
+		end
+		local function getOrderedStateIndex(
+			nextHookContext: Types.ComponentHookContext,
+			id: string
+		): number
+			local orderedStates = nextHookContext.orderedStates[id]
+			if orderedStates then
+				return #orderedStates + 1
+			else
+				return 1
+			end
+		end
+
+		local function createQueueUpdateClosure()
+			assertInRenderPhase()
+
+			local context = currentHookNextContext :: Types.ComponentHookContext
+			if not context then
+				return function() end
+			end
+
+			if context.cacheQueueUpdateClosure then
+				return context.cacheQueueUpdateClosure
+			end
+			
+			local closure_parentNode = currentHookParentNode :: Types.VirtualNode
+			local alreadyQueueing = false
+			local lastUpdateHeartbeatCount = context.createdHeartbeatCount
+			local function queueUpdate()
+				if closure_parentNode._wasUnmounted then
+					return
+				end
+				if alreadyQueueing then
+					return
+				end
+				
+				alreadyQueueing = true
+
+				task.defer(function()
+					if closure_parentNode._wasUnmounted then
+						return
+					end
+
+					if
+						PractGlobalSystems.HeartbeatFrameCount
+						== lastUpdateHeartbeatCount
+					then
+						PractGlobalSystems.HeartbeatSignal:Wait()
+					end
+					
+					if closure_parentNode._wasUnmounted then
+						return
+					end
+					
+					alreadyQueueing = false
+					lastUpdateHeartbeatCount = PractGlobalSystems.HeartbeatFrameCount
+					updateChildFunctionalComponent(
+						closure_parentNode,
+						closure_parentNode._childLastComponent,
+						closure_parentNode._childLastProps
+					)
+				end)
+			end
+			context.cacheQueueUpdateClosure = queueUpdate
+			return queueUpdate
+		end
+		
+		PractGlobalSystems._reconcilerHookCallbacks = {
+			useState = function(initialState)
+				assertInRenderPhase()
+				local lastHookContext = getLastHookContext()
+				local nextHookContext = getNextHookContext()
+				local index = getOrderedStateIndex(
+					nextHookContext,
+					"useState"
+				)
+				
+				local lastOrderedState = nil
+				if lastHookContext then
+					local lastOrderedStates = lastHookContext.orderedStates.useState
+					if lastOrderedStates then
+						lastOrderedState = lastOrderedStates[index]
+					end
+				end
+
+				local nextStateValue = nil
+				if lastOrderedState ~= nil then
+					nextStateValue = lastOrderedState.value
+				else
+					if typeof(initialState) == "function" then
+						nextStateValue = (initialState :: any)()
+					else
+						nextStateValue = initialState
+					end
+				end
+				
+				local nextOrderedStates
+				do
+					local _nextOrderedStates = nextHookContext.orderedStates.useState
+					if _nextOrderedStates then
+						nextOrderedStates = _nextOrderedStates
+					else
+						nextOrderedStates = {}
+						nextHookContext.orderedStates.useState = nextOrderedStates
+					end
+				end
+				
+				local cacheSetState
+				if lastOrderedState then
+					cacheSetState = lastOrderedState.setState
+				else
+					local queueUpdate = createQueueUpdateClosure()
+					local closure_parentNode = currentHookParentNode :: Types.VirtualNode
+					
+					cacheSetState = function(stateUpdate)
+						-- setState and queueUpdate calls are currently expected
+						-- to be able to be called from any point, including
+						-- inside a render function.
+						-- Updates will simply be deferred until all non-yielding
+						-- threads finish.
+						
+						-- This allows for behavior such as calling setState twice
+						-- in a row without reconciling twice in a row,
+						-- as well as calling setState during an effect.
+						
+						task.defer(function()
+							local latestContext = closure_parentNode._hookContext
+							if latestContext and not closure_parentNode._wasUnmounted then
+								local latestOrderedStates = latestContext.orderedStates.useState
+								if latestOrderedStates then
+									latestOrderedStates[index] = {
+										value = stateUpdate,
+										setState = cacheSetState
+									}
+									queueUpdate()
+								end
+							end
+						end)
+					end
+				end
+				table.insert(
+					nextOrderedStates,
+					{
+						value = nextStateValue,
+						setState = cacheSetState
+					}
+				)
+
+				return nextStateValue, cacheSetState
+			end,
+			useMemo = function(create, nextDeps)
+				assertInRenderPhase()
+				local lastHookContext = getLastHookContext()
+				local nextHookContext = getNextHookContext()
+				local index = getOrderedStateIndex(
+					nextHookContext,
+					"useMemo"
+				)
+				
+				local lastOrderedState = nil
+				if lastHookContext then
+					local lastOrderedStates = lastHookContext.orderedStates.useMemo
+					if lastOrderedStates then
+						lastOrderedState = lastOrderedStates[index]
+					end
+				end
+				
+				local nextStateValue = nil
+				if lastOrderedState ~= nil and compareDeps(lastOrderedState.deps, nextDeps) then
+					nextStateValue = lastOrderedState.value
+				else
+					nextStateValue = create()
+				end
+				
+				local nextOrderedStates
+				do
+					local _nextOrderedStates = nextHookContext.orderedStates.useMemo
+					if _nextOrderedStates then
+						nextOrderedStates = _nextOrderedStates
+					else
+						nextOrderedStates = {}
+						nextHookContext.orderedStates.useMemo = nextOrderedStates
+					end
+				end
+				table.insert(nextOrderedStates, { value = nextStateValue, deps = nextDeps :: any })
+				return nextStateValue
+			end,
+			useEffect = function(effect, nextDeps)
+				assertInRenderPhase()
+				local lastHookContext = getLastHookContext()
+				local nextHookContext = getNextHookContext()
+				local index = getOrderedStateIndex(
+					nextHookContext,
+					"useEffect"
+				)
+				
+				local lastOrderedState = nil
+				if lastHookContext then
+					local lastOrderedStates = lastHookContext.orderedStates.useEffect
+					if lastOrderedStates then
+						lastOrderedState = lastOrderedStates[index]
+					end
+				end
+
+				local shouldRunEffect
+				local reuseCleanup: (() -> ())? = nil
+				if lastOrderedState ~= nil then
+					if nextDeps and compareDeps(lastOrderedState.deps, nextDeps) then
+						shouldRunEffect = false
+						reuseCleanup =  lastOrderedState.cleanup
+					else
+						lastOrderedState.cancelled = true
+						local cleanup = lastOrderedState.cleanup
+						if cleanup then
+							task.spawn(cleanup)
+						end
+						shouldRunEffect = true
+					end
+				else
+					shouldRunEffect = true
+				end
+
+				local nextState = {
+					deps = nextDeps :: {any}?,
+					cleanup = reuseCleanup,
+					cancelled = false
+				}
+				if shouldRunEffect then
+					local queueUpdate = createQueueUpdateClosure()
+					task.spawn(function()
+						local cleanup = (effect :: any)(queueUpdate)
+						if nextState.cancelled then
+							if cleanup then
+								cleanup()
+							end
+							return
+						end
+						nextState.cleanup = cleanup
+					end)
+				end
+				
+				local nextOrderedStates
+				do
+					local _nextOrderedStates = nextHookContext.orderedStates.useEffect
+					if _nextOrderedStates then
+						nextOrderedStates = _nextOrderedStates
+					else
+						nextOrderedStates = {}
+						nextHookContext.orderedStates.useEffect = nextOrderedStates
+					end
+				end
+				table.insert(nextOrderedStates, nextState)
+			end,
+			useConsumer = function(context: any)
+				assertInRenderPhase()
+				local childContext; do
+					local childNode = (currentHookParentNode :: any)._child :: Types.VirtualNode?
+					if childNode then
+						childContext = childNode._hostContext
+					else
+						childContext = currentMountingHostContext
+							or (currentHookParentNode :: Types.VirtualNode)._hostContext
+					end
+				end
+				local providerChain = childContext.providers
+				
+				local key = context._symbol
+				for i = #providerChain, 1, -1 do
+					local provider = providerChain[i]
+					local object = provider.find(key)
+					if object then
+						return object.getValue()
+					end
+				end
+				
+				error(tostring(context) .. " was not provided by a parent component!")
+			end,
+			customHook = (function<HookArgs..., HookReturns...>(
+				lifecycleClosureCB: (
+					queueUpdate: () -> ()
+				) -> Types.CustomHookLifecycle<(HookArgs...) -> HookReturns...>,
+				...: HookArgs...
+			): HookReturns...
+				assertInRenderPhase()
+				local lastHookContext = getLastHookContext()
+				local nextHookContext = getNextHookContext()
+				local index = getOrderedStateIndex(
+					nextHookContext,
+					"customHook"
+				)
+				
+				local lastOrderedState = nil
+				if lastHookContext then
+					local lastOrderedStates = lastHookContext.orderedStates.customHook
+					if lastOrderedStates then
+						lastOrderedState = lastOrderedStates[index]
+					end
+				end
+				
+				local shouldCreateClosure
+				if lastOrderedState ~= nil then
+					if lifecycleClosureCB ~= lastOrderedState.createClosure then
+						shouldCreateClosure = true
+
+						local lastClosureCleanup = lastOrderedState.closure.cleanup
+						if lastClosureCleanup then
+							task.spawn(lastClosureCleanup)
+						end
+					else
+						shouldCreateClosure = false
+					end
+				else
+					shouldCreateClosure = true
+				end
+
+				local nextClosure
+				if shouldCreateClosure then
+					local queueUpdate = createQueueUpdateClosure()
+					nextClosure = lifecycleClosureCB(queueUpdate)
+				else
+					nextClosure = (lastOrderedState :: any).closure
+				end
+
+				local nextState = {
+					closure = nextClosure,
+					createClosure = lifecycleClosureCB,
+				}
+
+				local nextOrderedStates
+				do
+					local _nextOrderedStates = nextHookContext.orderedStates.customHook
+					if _nextOrderedStates then
+						nextOrderedStates = _nextOrderedStates
+					else
+						nextOrderedStates = {}
+						nextHookContext.orderedStates.customHook = nextOrderedStates
+					end
+				end
+				table.insert(nextOrderedStates, nextState)
+
+				return nextClosure.call(...)
+			end) :: any, 
+		}
+
+		mountChildFunctionalComponent = function(
+			parentNode: Types.VirtualNode,
+			component: Types.Component,
+			props: Types.PropsArgument,
+			context: Types.HostContext?
+		)
+			parentNode._child = mountVirtualNode(
+				callChildFunctionalComponent(
+					parentNode,
+					component,
+					props,
+					context
+				),
+				context or parentNode._hostContext
+			)
+		end
+
+		updateChildFunctionalComponent = function(
+			parentNode: Types.VirtualNode,
+			component: Types.Component,
+			props: Types.PropsArgument
+		)
+			parentNode._child = updateVirtualNode(
+				parentNode._child,
+				callChildFunctionalComponent(
+					parentNode,
+					component,
+					props
+				)
+			)
+		end
+
+		unmountChildFunctionalComponent = function(parentNode: Types.VirtualNode)
+			cleanupLastHookContext(parentNode._hookContext, nil)
+			unmountVirtualNode(parentNode._child)
+		end
+	end
 	
 	local function replaceVirtualNode(
 		virtualNode: Types.VirtualNode,
@@ -95,7 +628,7 @@ local function createReconciler(): Types.Reconciler
 		specialApplyPropHandlers[Symbol_Children] = NOOP -- Handled in a separate pass
 		specialApplyPropHandlers[Symbols.OnUnmountWithHost] = NOOP -- Handled in unmount
 		specialApplyPropHandlers[Symbols.OnMountWithHost] = NOOP -- Handled in mount
-		specialApplyPropHandlers[Symbols.OnUpdateWithHost] = NOOP -- Handled in update
+		specialApplyPropHandlers[Symbols.OnRenderWithHost] = NOOP -- Handled in update
 		
 		specialApplyPropHandlers[Symbols.Attributes] = function(
 			virtualNode,
@@ -434,7 +967,7 @@ local function createReconciler(): Types.Reconciler
 		newProps: Types.PropsArgument,
 		instance: Instance
 	)
-		local onUpdateCB = newProps[Symbols.OnUpdateWithHost]
+		local onUpdateCB = newProps[Symbols.OnRenderWithHost]
 		if onUpdateCB then
 			task.spawn(onUpdateCB, instance, newProps)
 		end
@@ -592,7 +1125,7 @@ local function createReconciler(): Types.Reconciler
 	local function createHost(
 		instance: Instance?,
 		key: string?,
-		providers: {Types.ContextProvider},
+		providers: {Types.InternalContextProvider},
 		siblingClusterCache: Types.SiblingClusterCache?
 	): Types.HostContext
 		return {
@@ -606,7 +1139,7 @@ local function createReconciler(): Types.Reconciler
 	local function createVirtualNode(
 		element: Types.Element,
 		host: Types.HostContext,
-		contextProviders: {Types.ContextProvider}?
+		contextProviders: {Types.InternalContextProvider}?
 	): Types.VirtualNode
 		return {
 			--[Symbols.IsPractVirtualNode] = true,
@@ -828,9 +1361,10 @@ local function createReconciler(): Types.Reconciler
 		end
 		
 		updateByElementKind[ElementKinds.RenderComponent] = function(virtualNode, newElement)
-			virtualNode._child = updateVirtualNode(
-				virtualNode._child,
-				newElement.component(newElement.props)
+			updateChildFunctionalComponent(
+				virtualNode,
+				newElement.component,
+				newElement.props
 			)
 			return virtualNode
 		end
@@ -855,9 +1389,10 @@ local function createReconciler(): Types.Reconciler
 			end
 			
 			-- Apply render update
-			virtualNode._child = updateVirtualNode(
-				virtualNode._child,
-				closure.render(newElement.props)
+			updateChildFunctionalComponent(
+				virtualNode,
+				closure.render,
+				newElement.props
 			)
 			
 			local didUpdate = closure.didUpdate
@@ -881,36 +1416,40 @@ local function createReconciler(): Types.Reconciler
 		end
 		
 		updateByElementKind[ElementKinds.StateComponent] = function(virtualNode, newElement)
-			virtualNode._child = updateVirtualNode(
-				virtualNode._child,
-				virtualNode._renderClosure(newElement.props)
+			updateChildFunctionalComponent(
+				virtualNode,
+				virtualNode._renderClosure,
+				newElement.props
 			)
 			
 			return virtualNode
 		end
 		
 		updateByElementKind[ElementKinds.SignalComponent] = function(virtualNode, newElement)
-			virtualNode._child = updateVirtualNode(
-				virtualNode._child,
-				newElement.render(newElement.props)
+			updateChildFunctionalComponent(
+				virtualNode,
+				newElement.render,
+				newElement.props
 			)
 			
 			return virtualNode
 		end
 		
 		updateByElementKind[ElementKinds.ContextProvider] = function(virtualNode, newElement)
-			virtualNode._child = updateVirtualNode(
-				virtualNode._child,
-				virtualNode._renderClosure(newElement.props)
+			updateChildFunctionalComponent(
+				virtualNode,
+				virtualNode._renderClosure,
+				newElement.props
 			)
 			
 			return virtualNode
 		end
 		
 		updateByElementKind[ElementKinds.ContextConsumer] = function(virtualNode, newElement)
-			virtualNode._child = updateVirtualNode(
-				virtualNode._child,
-				virtualNode._renderClosure(newElement.props)
+			updateChildFunctionalComponent(
+				virtualNode,
+				virtualNode._renderClosure,
+				newElement.props
 			)
 			
 			return virtualNode
@@ -1298,15 +1837,14 @@ local function createReconciler(): Types.Reconciler
 			mountChildren(virtualNode)
 			updateChildren(virtualNode, element.hostParent, element.children)
 		end
-		
+
 		mountByElementKind[ElementKinds.RenderComponent] = function(virtualNode)
 			local element = virtualNode._currentElement
-			local props = element.props
-			local child = mountVirtualNode(
-				element.component(props),
-				virtualNode._hostContext
+			mountChildFunctionalComponent(
+				virtualNode,
+				element.component,
+				element.props
 			)
-			virtualNode._child = child
 		end
 		
 		mountByElementKind[ElementKinds.LifecycleComponent] = function(virtualNode)
@@ -1332,9 +1870,10 @@ local function createReconciler(): Types.Reconciler
 						
 						local saveElement = virtualNode._currentElement
 						
-						virtualNode._child = updateVirtualNode(
-							virtualNode._child,
-							virtualNode._lifecycleClosure.render(saveElement.props)
+						updateChildFunctionalComponent(
+							virtualNode,
+							virtualNode._lifecycleClosure.render,
+							saveElement.props
 						)
 					end)
 				end
@@ -1349,9 +1888,10 @@ local function createReconciler(): Types.Reconciler
 			end
 			
 			virtualNode._lifecycleClosure = closure
-			virtualNode._child = mountVirtualNode(
-				closure.render(element.props),
-				virtualNode._hostContext
+			mountChildFunctionalComponent(
+				virtualNode,
+				closure.render,
+				element.props
 			)
 			
 			local didMount = closure.didMount
@@ -1414,9 +1954,10 @@ local function createReconciler(): Types.Reconciler
 							-- Abort if side effects cause the component to unmount
 							if virtualNode._wasUnmounted then return end
 							
-							virtualNode._child = updateVirtualNode(
-								virtualNode._child,
-								virtualNode._renderClosure(virtualNode._currentElement.props)
+							updateChildFunctionalComponent(
+								virtualNode,
+								virtualNode._renderClosure,
+								virtualNode._currentElement.props
 							)
 						end)
 					end
@@ -1438,9 +1979,10 @@ local function createReconciler(): Types.Reconciler
 					-- Abort if side effects cause the component to unmount
 					if virtualNode._wasUnmounted then return end
 					
-					virtualNode._child = updateVirtualNode(
-						virtualNode._child,
-						virtualNode._renderClosure(element.props)
+					updateChildFunctionalComponent(
+						virtualNode,
+						virtualNode._renderClosure,
+						element.props
 					)
 				end
 			end
@@ -1459,34 +2001,36 @@ local function createReconciler(): Types.Reconciler
 			local element = virtualNode._currentElement
 			local closure = element.makeStateClosure(getState, setState, subscribeState)
 			
-			virtualNode._child = mountVirtualNode(
-				closure(element.props),
-				virtualNode._hostContext
-			)
 			virtualNode._renderClosure = closure
+			mountChildFunctionalComponent(
+				virtualNode,
+				closure,
+				element.props
+			)
 		end
 		mountByElementKind[ElementKinds.SignalComponent] = function(virtualNode)
 			local element = virtualNode._currentElement
-			virtualNode._child = mountVirtualNode(
-				element.render(element.props),
-				virtualNode._hostContext
-			)
 			virtualNode._connection = element.signal:Connect(function()
 				if virtualNode._wasUnmounted then return end
 				
 				local currentElement = virtualNode._currentElement
-				local props = currentElement.props
-				virtualNode._child = updateVirtualNode(
-					virtualNode._child,
-					currentElement.render(props)
+				updateChildFunctionalComponent(
+					virtualNode,
+					currentElement.render,
+					currentElement.props
 				)
 			end)
+			mountChildFunctionalComponent(
+				virtualNode,
+				element.render,
+				element.props
+			)
 		end
 		mountByElementKind[ElementKinds.ContextProvider] = function(virtualNode)
 			local hostContext = virtualNode._hostContext
 			
 			local providedObjectsMap = {} :: {[string]: any}
-			local provider: Types.ContextProvider = {
+			local provider: Types.InternalContextProvider = {
 				find = function(key: string)
 					return providedObjectsMap[key]
 				end,
@@ -1512,8 +2056,10 @@ local function createReconciler(): Types.Reconciler
 				end
 			end)
 			
-			virtualNode._child = mountVirtualNode(
-				closure(element.props),
+			mountChildFunctionalComponent(
+				virtualNode,
+				closure,
+				element.props,
 				createHost(
 					hostContext.instance,
 					hostContext.childKey,
@@ -1524,8 +2070,7 @@ local function createReconciler(): Types.Reconciler
 			virtualNode._renderClosure = closure
 		end
 		mountByElementKind[ElementKinds.ContextConsumer] = function(virtualNode)
-			local hostContext = virtualNode._hostContext
-			local providerChain = hostContext.providers
+			local providerChain = virtualNode._hostContext.providers
 			
 			local element = virtualNode._currentElement
 			local closure = element.makeClosure(function(key: string): any?
@@ -1538,9 +2083,10 @@ local function createReconciler(): Types.Reconciler
 				end
 				return nil
 			end)
-			virtualNode._child = mountVirtualNode(
-				closure(element.props),
-				hostContext
+			mountChildFunctionalComponent(
+				virtualNode,
+				closure,
+				element.props
 			)
 			virtualNode._renderClosure = closure
 		end
@@ -1646,9 +2192,7 @@ local function createReconciler(): Types.Reconciler
 		unmountByElementKind[ElementKinds.Portal] = function(virtualNode)
 			unmountChildren(virtualNode)
 		end
-		unmountByElementKind[ElementKinds.RenderComponent] = function(virtualNode)
-			unmountVirtualNode(virtualNode._child)
-		end
+		unmountByElementKind[ElementKinds.RenderComponent] = unmountChildFunctionalComponent
 		unmountByElementKind[ElementKinds.Index] = function(virtualNode)
 			unmountChildren(virtualNode)
 		end
@@ -1661,21 +2205,15 @@ local function createReconciler(): Types.Reconciler
 				task.spawn(willUnmount, saveElement.props)
 			end
 			
-			unmountVirtualNode(virtualNode._child)
+			unmountChildFunctionalComponent(virtualNode)
 		end
-		unmountByElementKind[ElementKinds.StateComponent] = function(virtualNode)
-			unmountVirtualNode(virtualNode._child)
-		end
+		unmountByElementKind[ElementKinds.StateComponent] = unmountChildFunctionalComponent
 		unmountByElementKind[ElementKinds.SignalComponent] = function(virtualNode)
 			virtualNode._connection:Disconnect()
-			unmountVirtualNode(virtualNode._child)
+			unmountChildFunctionalComponent(virtualNode)
 		end
-		unmountByElementKind[ElementKinds.ContextProvider] = function(virtualNode)
-			unmountVirtualNode(virtualNode._child)
-		end
-		unmountByElementKind[ElementKinds.ContextConsumer] = function(virtualNode)
-			unmountVirtualNode(virtualNode._child)
-		end
+		unmountByElementKind[ElementKinds.ContextProvider] = unmountChildFunctionalComponent
+		unmountByElementKind[ElementKinds.ContextConsumer] = unmountChildFunctionalComponent
 		unmountByElementKind[ElementKinds.SiblingCluster] = function(virtualNode)
 			local siblings = virtualNode._siblings
 			for i = 1, #siblings do

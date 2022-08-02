@@ -107,7 +107,7 @@ end
 
 ## Lifecycle event symbols
 
-Pract provides the following special symbols for lifecycle events with instance-based elements: `Pract.OnMountWithHost`, `Pract.OnUpdateWithHost`, `Pract.OnUnmountWithHost`. These are called in deferred time, and expose the `rbx` parameter like normal events. They can be used to apply tween effects:
+Pract provides the following special symbols for lifecycle events with instance-based elements: `Pract.OnMountWithHost`, `Pract.OnRenderWithHost`, `Pract.OnUnmountWithHost`. These are called in deferred time, and expose the `rbx` parameter like normal events. They can be used to apply tween effects:
 
 ```lua
 local function TweeningFrameOnMount(props: {})

@@ -30,7 +30,7 @@ jobs:
           New-Item -Path 'C:/Program Files (x86)/Roblox/Versions/version-*/ClientSettings' -Name "ClientAppSettings.json"
           $flags | ConvertTo-Json -depth 32| set-content -Path 'C:/Program Files (x86)/Roblox/Versions/version-*/ClientSettings/ClientAppSettings.json'
       - name: install foreman
-        uses: rojo-rbx/setup-foreman@v1
+        uses: Roblox/setup-foreman@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: install foreman packages (rojo, run-in-roblox)

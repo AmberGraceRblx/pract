@@ -3,7 +3,7 @@
 
 
 -- Util types
-export type ChildrenArgument = {[any]: Element | boolean | nil}
+export type ChildrenArgument = {[any]: any}--{[any]: Element | boolean | nil}
 export type PropsArgument = any -- {[any]: any}
 export type Symbol = {}
 --export type StateUpdate<P, S> = {[any]: any} | (state: P, props: P) -> {[any]: any}
@@ -92,14 +92,24 @@ export type LifecycleTyped<P> = {
 	didUpdate: ((props: P) -> ())?,
 	willUnmount: ((props: P) -> ())?,
 }
+export type CustomHookLifecycle<T> = {
+	call:  T,
+	cleanup: (() -> ())?,
+}
 
 
 
 -- Internal reconciler types
-export type ContextProvider = {
+export type InternalContextProvider = {
 	find: (name: string) -> any?,
 	provide: (name: string, object: any?) -> (),
 	unprovide: (name: string) -> (),
+}
+export type PublicContextObject = {
+	Provider: ComponentTyped<{
+		value: any,
+		child: Element,
+	}>
 }
 export type SiblingClusterCache = {
 	lastProvidedInstance: Instance?,
@@ -111,14 +121,30 @@ export type HostContext = {	-- Immutable type used as an object reference passed
 							-- This reduces memory usage and simplifies node visiting processes.
 	instance: Instance?,
 	childKey: string?,
-	providers: {ContextProvider},
+	providers: {InternalContextProvider},
 	siblingClusterCache: SiblingClusterCache?,
+}
+export type EffectCallback = () -> (() -> ())?
+export type ComponentHookContext = {
+	createdHeartbeatCount: number,
+	cacheQueueUpdateClosure: (() -> ())?,
+	orderedStates: {
+		useState: {{ value: any, setState: (value: any) -> () }}?,
+		useMemo: {{ value: any, deps: {any}}}?,
+		useEffect: {{
+			cleanup: (() -> ())?,
+			deps: {any}?,
+			cancelled: boolean,
+		}}?,
+		customHook: {{ closure: any, createClosure: any }}?,
+	},
 }
 export type VirtualNode = {
 	[any]: any,
 	_wasUnmounted: boolean,
 	_currentElement: Element,
 	_hostContext: HostContext,
+	_hookContext: ComponentHookContext?
 }
 export type PractTree = {
 	[Symbol]: any,
@@ -137,9 +163,15 @@ export type Reconciler = {
 	createHost: (
 		instance: Instance?,
 		key: string?,
-		providers: {ContextProvider},
+		providers: {InternalContextProvider},
 		siblingClusterCache: SiblingClusterCache?
 	) -> HostContext
 }
+export type HookReconciler = <HookArgs..., HookReturns...>(
+	lifecycleClosureCB: (
+		queueUpdate: () -> ()
+	) -> CustomHookLifecycle<(HookArgs...) -> HookReturns...>,
+	HookArgs...
+) -> HookReturns...
 
 return nil

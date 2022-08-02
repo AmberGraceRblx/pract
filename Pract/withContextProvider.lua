@@ -1,13 +1,19 @@
 --!strict
+--[[
+	Deprecated
+]]
 
 local Types = require(script.Parent.Types)
 local Symbols = require(script.Parent.Symbols)
 
 local Symbol_ElementKind = Symbols.ElementKind
 local Symbol_ContextProvider = Symbols.ElementKinds.ContextProvider
+--[[
+	Deprecated
+]]
 local function withContextProvider(
 	makeClosureCallback: (
-		provide: (key: string, object: any) -> (() -> ())
+		provide: (key: any, object: any) -> (() -> ())
 	) -> Types.Component
 ): Types.Component
 	local finalComponent = function(props: Types.PropsArgument): Types.Element
