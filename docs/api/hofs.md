@@ -6,6 +6,9 @@ parent: API Reference
 permalink: /api/hofs
 ---
 
+> DEPRECATED - Most higher order functions that ship with Pract are now deprecated in favor of
+[Hooks](./hooks)!
+
 # Higher-Order Functions
 
 > Warning: API Documentation is still a work in progress, and Pract's feature set has not yet been finalized.
