@@ -185,10 +185,51 @@ end
 
 # Pract.useConsumer
 
-The following functions are also added:
-
+Similar to [React.useContext](https://reactjs.org/docs/hooks-reference.html#usecontext)
+Full documentation coming soon.
 
 # Pract.createContext
+
+Similar to [React.createContext](https://reactjs.org/docs/context.html#reactcreatecontext)
+Full documentation coming soon.
+
 # Pract.createHook
 
-Full documentation is coming soon.
+`createHook` is a very versatile way to connect external state and other side
+effect / update behavior to a component!
+
+`createHook` takes in a callback that should have one parameter (a `queueUpdate`
+function), and return a table with a `call` field and a `cleanup` field.
+
+Example hook (queues an update whenever the player's viewport size changes):
+```lua
+local useDisplayBreakpoint = Pract.createHook(function(queueUpdate)
+	local cam = workspace.CurrentCamera
+	local conn = cam:GetPropertyChangedSignal("ViewportSize"):Connect(queueUpdate)
+	return {
+		call = function(breakpointSize: Vector2)
+			local size = cam.ViewportSize
+			local overBreakpoint = (size.X >= breakpointSize.X) and (size.Y >= breakpointSize.Y)
+			return overBreakpoint, size
+		end,
+		cleanup = function()
+			conn:Disconnect()
+		end,
+	}
+end)
+```
+
+This custom hook can then be called inside another Pract component:
+
+```lua
+-- This is a Pract component which decorates a stroke that will automatically
+-- be reconciled whenever the screen size updates. The stroke will have a
+-- thickness of 8 for 1080p+ screens, and a thickness of 4 for all other screens.
+local BreakpointStroke: Pract.Component = function(props)
+    local screenIsHDOrLarger, viewportSize = useDisplayBreakpoint(Vector2.new(1920, 1080))
+
+    return Pract.decorate({
+        Thickness = if screenIsHDOrLarger then 8 else 4
+    })
+end
+```
