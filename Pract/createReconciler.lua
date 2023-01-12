@@ -14,10 +14,10 @@ Error applying props:
 	%s
 ]]
 
-local TEMPLATE_STAMP_ERROR = [[
-Error creating stamp:
-	%s
-]]
+-- local TEMPLATE_STAMP_ERROR = [[
+-- Error creating stamp:
+-- 	%s
+-- ]]
 
 local UPDATE_PROPS_ERROR = [[
 Error updating props:
@@ -65,8 +65,8 @@ local function createReconciler(): Types.Reconciler
 	local unmountChildFunctionalComponent
 	do
 		local currentHookParentNode: Types.VirtualNode? = nil
-		local currentHookComponent: Types.Component? = nil
-		local currentHookProps: Types.PropsArgument? = nil
+		-- local currentHookComponent: Types.Component? = nil
+		-- local currentHookProps: Types.PropsArgument? = nil
 		local currentHookNextContext: Types.ComponentHookContext? = nil
 		local currentMountingHostContext: Types.HostContext? = nil
 
@@ -151,8 +151,8 @@ local function createReconciler(): Types.Reconciler
 			mountingHostContext: Types.HostContext?
 		)
 			currentHookParentNode = parentNode
-			currentHookComponent = component
-			currentHookProps = props
+			-- currentHookComponent = component
+			-- currentHookProps = props
 			currentMountingHostContext = mountingHostContext
 			-- Always reset here in case external code errored last reconcile
 			currentHookNextContext = nil
@@ -169,8 +169,8 @@ local function createReconciler(): Types.Reconciler
 			end
 			
 			currentHookParentNode = nil
-			currentHookComponent = nil
-			currentHookProps = nil
+			-- currentHookComponent = nil
+			-- currentHookProps = nil
 			currentHookNextContext = nil
 			return element
 		end
@@ -1645,9 +1645,9 @@ local function createReconciler(): Types.Reconciler
 	function updateChildren(
 		virtualNode: Types.VirtualNode,
 		hostParent: Instance,
-		newChildElements: Types.ChildrenArgument?
+		_newChildElements: Types.ChildrenArgument?
 	)
-		local newChildElements: Types.ChildrenArgument = newChildElements or {}
+		local newChildElements: Types.ChildrenArgument = _newChildElements or {}
 		virtualNode._updateChildrenCount = virtualNode._updateChildrenCount + 1
 		
 		local saveUpdateChildrenCount = virtualNode._updateChildrenCount

@@ -19,7 +19,6 @@ type Props = {
 
 local Symbol_ElementKind = Symbols.ElementKind
 local Symbol_ContextProvider = Symbols.ElementKinds.ContextProvider
-local Symbol_Children = Symbols.Children
 local function createContext(debugName: string?)
     local symbol = createSymbol(debugName or "Context")
 
