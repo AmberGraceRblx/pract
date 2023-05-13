@@ -6,9 +6,9 @@ Pract takes inspiration from Facebook's [React](https://reactjs.org/) and LPGHat
 
 Pract allows you to design your UI entirely in code, use a template designed in roblox's UI editor, or a mix of both.
 
-# [Documentation](https://ambers-careware.github.io/pract)
+# [Documentation](https://ambergracerblx.github.io/pract)
 
-See the [full Pract documentation](https://ambers-careware.github.io/pract) for a detailed guide on how to use Pract, with examples.
+See the [full Pract documentation](https://ambergracerblx.github.io/pract) for a detailed guide on how to use Pract, with examples.
 
 Basic usage example:
 ```lua
